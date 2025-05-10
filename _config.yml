@@ -7,8 +7,11 @@ show_excerpts: true # set to true to show excerpts on the homepage
 
 # Minima date format
 # refer to http://shopify.github.io/liquid/filters/date/ if you want to customize this
+highlighter: Pygments
+
 sass:
   sass_dir: _sass
+
 plainwhite:
   name: Patrick White
   tagline: Analyst, Data Science Enthusiast
@@ -25,8 +28,7 @@ plainwhite:
   # generate social links in footer
   social_links:
     #twitter: samarsault
-    github:  pw598, 
-    highlighter: Pygments
+    github:  pw598
     #linkedIn: 
     #rss: rss
     #dribbble: jekyll
