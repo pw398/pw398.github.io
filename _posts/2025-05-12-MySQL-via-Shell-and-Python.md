@@ -37,7 +37,7 @@ Similarly, Python has become one of the most widely adopted programming language
 
 Magic commands are not the only way to integrate SQL into a Python environment. Many libraries and functions, some of which we'll explore, are designed to accept plain-text SQL queries. A perk of the magic commands which refer to other languages is that they generally provide keyword-formatting that is catered to that language.
 
-Working in a Google Colab Python notebook, we will start with shell commands, and progress to include Python functions which wrap SQL queries. Of course, hosting your business's database in Google Colab (or through a notebook alone) would be highly problematic, unless you somehow mitigate the fact that the data will disappear at the end of your session. However, for our purposes of demonstration and replicability, it will work nicely.
+Working in a Google Colab Python notebook, which you can download <a href="notebooks/MySQL_via_Shell_and_Python.ipynb">here</a>, we will start with shell commands, and progress to include Python functions which wrap SQL queries. Of course, hosting your business's database in Google Colab (or through a notebook alone) would be highly problematic, unless you somehow mitigate the fact that the data will disappear at the end of your session. However, for our purposes of demonstration and replicability, it will work nicely.
 
 I must also mention that you should not include passwords in your code, even though I have, for simplicity. Instead, keep the sensitive commands stored in a secure .sql or text file to be read upon execution, or store the passwords securely in your operating system environment.
 
@@ -752,7 +752,7 @@ ORDER BY amount DESC;
 
 Let's get a little fancier. Below, we will join more than two tables together, getting the number of employees, number of customers, and sum of payments per office for 2003.
 
-The <code>DISTINCT</code> keyword will allow us to, not just count the number of rows in the database, as <code>COUNT</code> does, but rather, count the number of unique values for the specified field. In this case, the level of detail will be by office.
+The <code>DISTINCT</code> keyword will allow us to not just count the number of rows in the database, as <code>COUNT</code> would, but rather, count the number of unique values for the specified field. In this case, the level of detail will be by office.
 
 Instead of an <code>INNER JOIN</code>, we will use a <code>LEFT JOIN</code>, which means we keep all records from the 'left' table (i.e., the first one mentioned, offices), and bring in matches from the other tables, but associate null values for the right table with entries on the left which cannot be matched to.
 
@@ -799,7 +799,7 @@ result.head()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-7.png" style="height: 200px; width:auto;">
 
 
-Below, we'll create a crosstab of amount per customer (as rows) by year (as columns). With SQL Server, we would use the <code>PIVOT</code> keyword, but with MySQL, we'll have to use <code>CASE</code> statement logic.
+Below, we'll create a crosstab of amount per customer (as rows) by year (as columns). With SQL Server, we could use the <code>PIVOT</code> keyword, but with MySQL, we'll have to setlle for <code>CASE</code> statement logic.
 
 ```python
 import mysql.connector
@@ -951,7 +951,7 @@ df_pivot.head()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-10.png" style="height: 200px; width:auto;">
 
 
-Below, we'll break out the sum of payments at the office, customer, and employee level. Notice that the tables have been aliased, so that they can be referenced with abbreviations to save us some typing. We use <code>INNER JOIN</code>, thereby assuming we are not interested in the data for customers or employees to which no sales are associated.
+Below, we'll break out the sum of payments at the office, customer, and employee level. Notice that the tables have been aliased, so that they can be referenced with abbreviations to save us some typing. We use <code>INNER JOIN</code>, thereby assuming we are not interested in the data for customers and employees to which no sales are associated.
 
 ```sql
 %%sql
@@ -975,9 +975,7 @@ ORDER BY o.officeCode, e.employeeNumber, c.customerNumber;
 The final SQL-only task, below, will elaborate on the above. The challenge is to:
 
 - Include payment totals for office and employee, despite the data having a customer level of detail.
-
 - Include the percentage of office and employee totals accounted for by each row.
-
 - Rank the row-level amounts for office and employee, descending.
 
 The key to this is a window function, combined with the <code>OVER</code> and <code>PARTITION</code> keywords. For example,
@@ -1037,9 +1035,9 @@ SQL offers the ability to create functions as well. For example, we could create
 
 The challenge is to:
 
-1. From the <code>products</code> table, pull <code>productCode</code> and productName, and from the prodlines table, pull <code>textDescription</code>. Concatenate <code>productName</code> with <code>textDescription.</code>
+1. From the <code>products</code> table, pull <code>productCode</code> and <code>productName</code>, and from the prodlines table, pull <code>textDescription</code>. Concatenate <code>productName</code> with <code>textDescription.</code>
 
-2. Convert the concatenated text to word embeddings - high-dimension vectors of real numbers in continuous space, generated by a neural network, and saved to an importable library. The more similar the description text, the closer the direction of the vectors (there are other neat capabilities, like analogy calculations).
+2. Convert the concatenated text to word embeddings - high-dimensional vectors of real numbers in continuous space, generated by a neural network, and saved to an importable library. The more similar the description text, the closer the direction of the vectors (there are other neat capabilities, like analogy calculations).
 
 3. Use a dimensionality reduction technique called UMAP (Uniform Manifold Approximation Projection) to project the high-dimensional data onto a lower-dimensional space that we can visualize, with as minimal a loss of information as possible.
 
@@ -1135,10 +1133,7 @@ fig.show()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_cht.png" style="height: 400px; width:auto;">
 
 
-To zoom in, rotate, and hover over points for labels, download the chart by <a href="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_chart.html" download="plotly_chart.html">right-clicking here</a> and selecting "Save Link As". Or, download the .ipynb notebook below.
-
-**notebook link**
-
+To zoom in, rotate, and hover over points for labels, download the chart by <a href="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_chart.html" download="plotly_chart.html">right-clicking here</a> and selecting "Save Link As". Or, <a href="notebooks/MySQL_via_Shell_and_Python.ipynb">download the .ipynb notebook</a>.
 
 
 
