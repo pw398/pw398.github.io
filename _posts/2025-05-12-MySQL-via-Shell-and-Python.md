@@ -33,18 +33,17 @@ Similarly, Python has become one of the most widely adopted programming language
 - Ability to render as a webpage
 - Workflow documentation
 - Enhanced troubleshooting through cell-level modularization
-- "Magic commands" which add provide extended functionality (such as using other languages)
+- "Magic commands" which provide extended functionality (such as using other languages)
 
 Magic commands are not the only way to integrate SQL into a Python environment. Many libraries and functions, some of which we'll explore, are designed to accept plain-text SQL queries. A perk of the magic commands which refer to other languages is that they generally provide keyword-formatting that is catered to that language.
 
-Working in a Google Colab Python notebook, we will start with shell commands, and progress to include Python functions which wrap SQL queries. Of course, hosting your business's database in Google Colab (or through a notebook alone) would be highly problematic, unless you somehow mitigate the fact that the data will disappear at the end of your session. However, for our purposes of demonstration and replicabiliy, it will work nicely.
+Working in a Google Colab Python notebook, we will start with shell commands, and progress to include Python functions which wrap SQL queries. Of course, hosting your business's database in Google Colab (or through a notebook alone) would be highly problematic, unless you somehow mitigate the fact that the data will disappear at the end of your session. However, for our purposes of demonstration and replicability, it will work nicely.
 
-I must also mention that you should not include passwords in your code, even though I have for simplicity. Instead, keep the sensitive commands stored in a secure .sql or text file to be read upon execution, or store the passwords securely in your operating system environment.
+I must also mention that you should not include passwords in your code, even though I have, for simplicity. Instead, keep the sensitive commands stored in a secure .sql or text file to be read upon execution, or store the passwords securely in your operating system environment.
 
 Since Google Colab runs on a Linux environment, the shell commands are in Bash. Don't be intimidated if the commands look unfamiliar, that just means that you are part of the target audience. Do check out the following links if looking for context.
 
 - <a href="https://www.w3schools.com/bash/index.php">https://www.w3schools.com/bash/index.php</a>
-
 - <a href="https://www.w3schools.com/sql/">https://www.w3schools.com/sql/</a>
 
 
@@ -52,7 +51,7 @@ Since Google Colab runs on a Linux environment, the shell commands are in Bash. 
 # Installing and Importing Libraries
 
 We'll start by installing <code>mysql-server</code>. 
-- <code>!apt-get update</code> simply refreshes the list of available packages
+- <code>!apt-get update</code> refreshes the list of available packages
 - <code>-y</code> in the install command will automatically answer all prompts with yes during installation
 - <code>/dev&#8203;/null 2>&1</code> is simply a command to suppress cell output. Remove it if you need to debug the installation.
 
@@ -108,7 +107,7 @@ We can view the details of the service instance by entering the following.
 ```
 
 Creating a <code>.my.cnf</code> file prevents us from having to specify our username and password each time we enter shell commands. The user will be set to "root" and the password to "pw". Again, referencing them explicitly in the code is not secure; it is only done here for simplicity.
-- <code>-f</code> stands for "force", meaning do not prompt for confirmation, and ignore nonexistent file 
+- <code>-f</code> stands for "force", meaning do not prompt for confirmation, and ignore nonexistent files
 - <code>-e</code> stands for "execute".
 
 ```bash
@@ -124,6 +123,14 @@ We can use the following to see if the MySQL connection has been established.
 ```bash
 # Check if sudo mysql can connect
 !mysql -N -e "SELECT 1;" || echo "Failed to connect"
+```
+
+<p></p>
+
+```bash
+# +---+
+# | 1 |
+# +---+
 ```
 
 The below specifies the user and host from which we can connect.
@@ -191,7 +198,7 @@ Now, when we run <code>SHOW DATABASES</code>, we see the 'classicmodels' databas
 
 To demonstrate how we would import the database from a .txt file, I will first export classicmodels to .txt.
 
-- <code>sed</code> stands for Stream Editor, a Unix-based tool for searching, finding and replacing, inserting, or deleting text in files or streams.
+- <code>sed</code> stands for Stream Editor, a Unix-based tool for searching, finding/replacing, inserting, or deleting text in files or streams.
 
 - <code>-i</code> tells <code>sed</code> to edit the file directly, rather than just printing the result to screen.
 
@@ -307,11 +314,13 @@ database = 'classicmodels'
 # +-------------------------+
 ```
 
-We can drill into a particular table, such as 'customers', and use DESCRIBE to view the attributes of each field.
+We can drill into a particular table, such as <code>customers</code>, and use <code>DESCRIBE</code> to view the attributes of each field.
 
 ```bash
 !mysql -e "USE {database}; DESCRIBE customers;"
 ```
+
+<p></p>
 
 ```bash
 # +------------------------+---------------+------+-----+---------+-------+
@@ -412,7 +421,7 @@ We'll take a break from the shell commands, in favor of Python magic commands.
 
 - We'll then proceed to use <code>%%sql</code> at the top of any cells that contain only single-statement SQL commands. A slight exception is that we can use <code>%%sql << my_variable</code> on the top line to store the SQL output into a Python variable.
 
-- To mix SQL with Python, or use multiple SQL commands in one cell, we'll preced the SQL statements with <code>%sql</code> (having only one percentage symbol).
+- To mix SQL with Python, or use multiple SQL commands in one cell, we'll precede the SQL statements with <code>%sql</code> (having only one percentage symbol).
 
 ```bash
 !pip install mysql-connector-python
@@ -449,7 +458,6 @@ LIMIT 5;
 The below shows us the same, but rather than limiting the SQL query to return only the top 5 rows, we save the entire SQL output into a Python variable, and use <code>result.head()</code> to print only the top 5 rows. The start of the SQL command must appear on the same line as the magic command, although it's true that we could continue onto the next line by inserting a backslash, as done below. Note that any spaces after the backslash will cause an error.
 
 ```python
-# capture SQL result in a Python variable
 result = %sql SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE \
 FROM information_schema.COLUMNS \
 WHERE TABLE_SCHEMA = 'classicmodels' \  
@@ -464,7 +472,6 @@ result.head()
 The alternative syntax which allows us to use <code>%%sql</code>, but also capture the result in a Python variable, is as follows. Note that we must put off the <code>result.head()</code> command until the next cell, as it's expected that all lines below the first are strictly SQL.
 
 ```sql
-# capture SQL result in a Python variable
 %%sql result <<
 SELECT
 TABLE_NAME, COLUMN_NAME, COLUMN_TYPE
@@ -547,9 +554,13 @@ In a notebook, for the sake of less scrolling, it might be nice to list out fiel
 
 - <code>tail -n +2</code> skips the header and prints from the second row downward
 
-- <code>paste</code> joins lines together, <code>-s</code> merges all lines into a single line
+- <code>paste</code> joins lines together
 
-- <code>-d</code> means to use a comma delimiter, and <code>-</code> tells <code>paste</code> to read from the piped output. 
+- <code>-s</code> merges all lines into a single line
+
+- <code>-d</code> means to use a comma delimiter
+
+- <code>-</code> tells <code>paste</code> to read from the piped output. 
 
 
 ```bash
@@ -720,7 +731,7 @@ SELECT
  GROUP BY customerNumber;
 ```
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-5.png" style="height: 75px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-5.png" style="height: 400px; width:auto;">
 
 To bring in customer name, we can do a join with the customers table. An <code>INNER JOIN</code>, as done below, assumes that we are only interested in records for which the field we are joining on has a match in both tables. An <code>ORDER BY</code> statement is used at the bottom to sort by sum of payments in descending fashion.
 
