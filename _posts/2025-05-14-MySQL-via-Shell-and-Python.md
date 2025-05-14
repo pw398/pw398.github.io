@@ -37,7 +37,7 @@ Similarly, Python has become one of the most widely adopted programming language
 
 Magic commands are not the only way to integrate SQL into a Python environment. Many libraries and functions, some of which we'll explore, are designed to accept plain-text SQL queries. A perk of the magic commands which refer to other languages is that they generally provide keyword-formatting that is catered to that language.
 
-Working in a Google Colab Python notebook, which you can download <a href="notebooks/MySQL_via_Shell_and_Python.ipynb">here</a>, we will start with shell commands, and progress to include Python functions which wrap SQL queries. Of course, hosting your business's database in Google Colab (or through a notebook alone) would be highly problematic, unless you somehow mitigate the fact that the data will disappear at the end of your session. However, for our purposes of demonstration and replicability, it will work nicely.
+Working in a Google Colab Python notebook, which you can download <a href="../notebooks/MySQL_via_Shell_and_Python.ipynb">here</a>, we will start with shell commands, and progress to include Python functions which wrap SQL queries. Of course, hosting your business's database in Google Colab (or through a notebook alone) would be highly problematic, unless you somehow mitigate the fact that the data will disappear at the end of your session. However, for our purposes of demonstration and replicability, it will work nicely.
 
 I must also mention that you should not include passwords in your code, even though I have, for simplicity. Instead, keep the sensitive commands stored in a secure .sql or text file to be read upon execution, or store the passwords securely in your operating system environment.
 
@@ -1133,7 +1133,7 @@ fig.show()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_cht.png" style="height: 400px; width:auto;">
 
 
-To zoom in, rotate, and hover over points for labels, download the chart by <a href="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_chart.html" download="plotly_chart.html">right-clicking here</a> and selecting "Save Link As". Or, <a href="notebooks/MySQL_via_Shell_and_Python.ipynb">download the .ipynb notebook</a>.
+To zoom in, rotate, and hover over points for labels, download the chart by <a href="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_chart.html" download="plotly_chart.html">right-clicking here</a> and selecting "Save Link As". Or, <a href="../notebooks/MySQL_via_Shell_and_Python.ipynb">download the .ipynb notebook</a>.
 
 
 
