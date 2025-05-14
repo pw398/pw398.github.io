@@ -5,7 +5,7 @@ date:   2025-05-12 00:00:00 +0000
 categories: SQL Databases NLP DimensionReduction
 ---
 
-MySQL is one of the most widely used relational database management systems (RDBMS), due in part to its open-source nature. To ensure a high degree of no-fuss replicability, the following was done in a Google Colab notebook. Commanding MySQL from within a Python environment offers a range of cool integrations.
+MySQL is one of the most widely used relational database management systems (RDBMS), due in part to its open-source community edition. To ensure a high degree of no-fuss replicability, the following was done in a Google Colab notebook. Commanding MySQL from within a Python environment offers a range of cool integrations.
 
 
 
@@ -26,21 +26,22 @@ MySQL is one of the most widely used relational database management systems (RDB
 
 # Introduction
 
-The ever-ubiquitous SQL language has been the standard for database-querying since the 70's, though numerous versions exist. This focuses on MySQL, a variant for which the community version is free. Similar alternatives include SQL Server Express, PostgreSQL, and MariaDB.
+The ubiquitous SQL language has been the standard for database-querying since the 70's, though numerous versions exist. This article focuses on MySQL, a variant for which the community version is free. Similar alternatives include SQL Server Express, PostgreSQL, and MariaDB.
 
-Similarly, Python has become one of the most widely adopted programming languages, for tasks which don't require a lower-level language such as C++. This popularity has led to the development of many powerful open-source libraries, from which powerful functions may be called upon in very few lines of code. IPython notebooks (.ipynb) have become very widely used because of:
+Similarly, Python has become one of the most widely adopted programming languages, for tasks which don't require low-level coding such as C++. This popularity has led to the development of many open-source libraries, from which powerful functions may be imported and called upon using few lines of code. IPython notebooks (.ipynb) have become widely used because of:
 - Shareability, readability, and transparency
+- Ability to render as a webpage
 - Workflow documentation
 - Enhanced troubleshooting through cell-level modularization
-- "Magic commands" which add additional functionality (e.g., integrating other languages)
+- "Magic commands" which add provide extended functionality (such as using other languages)
 
-Magic commands are not the only way to integrate SQL into a Python environment; many libraries and functions, some of which we'll explore, are designed to accept plain-text SQL queries. However, magic commands allow the same kind of keyword-formatting that an SQL editor would.
+Magic commands are not the only way to integrate SQL into a Python environment. Many libraries and functions, some of which we'll explore, are designed to accept plain-text SQL queries. A perk of the magic commands which refer to other languages is that they generally provide keyword-formatting that is catered to that language.
 
-Working in a Google Colab Python notebook, we will start with shell commands, and progress to include certain Python libraries designed for wrapping SQL queries. Of course, hosting your business's database in Google Colab (or a notebook alone) would be highly impractical, unless you somehow mitigate the fact that the data will disappear at the end of your session. But for demonstration purposes, and replicability, it works nicely.
+Working in a Google Colab Python notebook, we will start with shell commands, and progress to include Python functions which wrap SQL queries. Of course, hosting your business's database in Google Colab (or through a notebook alone) would be highly problematic, unless you somehow mitigate the fact that the data will disappear at the end of your session. However, for our purposes of demonstration and replicabiliy, it will work nicely.
 
-I must also mention that you should not include passwords in your code, as I have done for demo purposes. Instead, replace the sensitive commands with text stored in a .sql or text file for execution, or store the passwords securely in your operating system environment.
+I must also mention that you should not include passwords in your code, even though I have for simplicity. Instead, keep the sensitive commands stored in a secure .sql or text file to be read upon execution, or store the passwords securely in your operating system environment.
 
-Since Google Colab runs on a Linux environment, the shell commands are in Bash. Please do not be intimidated by any commands that look unfamiliar, that just means that you are part of the target audience. Do check out the following links if looking for context.
+Since Google Colab runs on a Linux environment, the shell commands are in Bash. Don't be intimidated if the commands look unfamiliar, that just means that you are part of the target audience. Do check out the following links if looking for context.
 
 - <a href="https://www.w3schools.com/bash/index.php">https://www.w3schools.com/bash/index.php</a>
 
@@ -106,7 +107,7 @@ We can view the details of the service instance by entering the following.
 # Flush tables: 3  Open tables: 356  Queries per second avg: 0.948
 ```
 
-Creating a <code>.my.cnf</code> file prevents us from having to specify our username and password each time we enter shell commands. The user will be set to "root" and the password to "pw". Again, this is not secure; it is only done here for simplicity.
+Creating a <code>.my.cnf</code> file prevents us from having to specify our username and password each time we enter shell commands. The user will be set to "root" and the password to "pw". Again, referencing them explicitly in the code is not secure; it is only done here for simplicity.
 - <code>-f</code> stands for "force", meaning do not prompt for confirmation, and ignore nonexistent file 
 - <code>-e</code> stands for "execute".
 
@@ -127,7 +128,7 @@ We can use the following to see if the MySQL connection has been established.
 
 The below specifies the user and host from which we can connect.
 
-- <code>IDENTIFIED WITH mysql_native_password</code> part forces compatibility with older systems, which is seemingly necessary in Google Colab.
+- <code>IDENTIFIED WITH mysql_native_password</code> forces compatibility with older systems, which is seemingly necessary in Google Colab.
 
 - <code>FLUSH PRIVILEGES</code> tells MySQL to reload the privilege tables, ensuring any changes made take effect without a restart.
 
@@ -141,6 +142,18 @@ If we use <code>SHOW DATABASES</code>, we see the system-related databases which
 !mysql -e "SHOW DATABASES;"
 ```
 
+<p></p>
+
+```bash
+# +--------------------+
+# | Database           |
+# +--------------------+
+# | information_schema |
+# | mysql              |
+# | performance_schema |
+# | sys                |
+# +--------------------+
+```
 
 
 # Importing a Sample Database
@@ -151,11 +164,13 @@ The data we'll work with comes from a sample SQL database called 'classicmodels'
 !mysql < mysqlsampledatabase.sql
 ```
 
-Now, when we run <code>SHOW DATABASES</code>, we see the classicmodels database is present.
+Now, when we run <code>SHOW DATABASES</code>, we see the 'classicmodels' database is present.
 
 ```bash
 !mysql -e "SHOW DATABASES;"
 ```
+
+<p></p>
 
 ```bash
 # +--------------------+
@@ -187,7 +202,7 @@ To demonstrate how we would import the database from a .txt file, I will first e
 
 Feel free to open the .txt file and inspect the format. 
 
-Next, we will use the appropriate commands to import that data into a database called text_db. <code>-ppw</code> is <code>-p</code> for password, followed by our password, <code>pw</code>. Unlike <code>-u root</code> for specifying our username, no space character is expected between the <code>-p</code> and the password.
+Next, we will use the appropriate commands to import that data into a database called text_db. <code>-ppw</code> is <code>-p</code> for password, followed by the password <code>pw</code>. Unlike with <code>-u root</code> for specifying our username, no space character is expected between the <code>-p</code> and the password.
 
 ```bash
 !mysql -u root -ppw -e "CREATE DATABASE text_db;"
@@ -395,9 +410,9 @@ We'll take a break from the shell commands, in favor of Python magic commands.
 
 - This requires that we install <code>mysql-connector-python</code>, run <code>%load_ext sql</code>, and establish a connection to a particular database. 
 
-- We'll then proceed to use <code>%%sql</code> at the top of any cells that are to contain only single-statement SQL commands. A slight exception is that we can use <code>%%sql << my_variable</code>code> on the top line to store the SQL output into a Python variable.
+- We'll then proceed to use <code>%%sql</code> at the top of any cells that contain only single-statement SQL commands. A slight exception is that we can use <code>%%sql << my_variable</code> on the top line to store the SQL output into a Python variable.
 
-- To mix SQL with Python, or use multiple SQL commands in one cell, we'll use <code>%sql</code>, with only one percentage symbol, to precede the SQL statements.
+- To mix SQL with Python, or use multiple SQL commands in one cell, we'll preced the SQL statements with <code>%sql</code> (having only one percentage symbol).
 
 ```bash
 !pip install mysql-connector-python
@@ -410,14 +425,14 @@ We'll take a break from the shell commands, in favor of Python magic commands.
 %sql mysql+mysqlconnector://root:pw@localhost/classicmodels
 ```
 
-The first configuration statement below offers backward compatibility with previous versions, seemingly necessary for the Google Colab notebook. <code>SqlMagic.autopandas = True</code> is a setting that will convert our SQL outputs to <code>pandas</code> dataframes, for enhanced formatting and easy manipulation.
+The first configuration statement below offers backward compatibility with previous versions, which is seemingly necessary for the Google Colab notebook. <code>SqlMagic.autopandas = True</code> is a setting that will convert our SQL outputs to <code>pandas</code> dataframes, for enhanced formatting and easy manipulation.
 
 ```python
 %config SqlMagic.style = '_DEPRECATED_DEFAULT'
 %config SqlMagic.autopandas = True
 ```
 
-Using the <code>%%sql</code> magic command looks like the below, where we select the list of table names, column names, and column types from the information_schema table, limiting results to the first 5 rows for brevity.
+Using the <code>%%sql</code> magic command looks like the below, where we select the list of table names, column names, and column types from the <code>information_schema</code> table, limiting results to the first 5 rows for brevity.
 
 ```sql
 %%sql
@@ -431,7 +446,7 @@ LIMIT 5;
 
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-1.png" style="height: 200px; width:auto;">
 
-The below shows us the same, but rather than limiting the SQL query to return only the top 5 rows, we save the entire SQL output into a Python variable, and use result.head() to print only the top 5 rows. The start of the SQL command must appear on the same line as the magic command, although it's true that we could insert a line continuation with <code>\\</code>, as done with the below lines. Be aware, however, that there cannot be any spaces after the backslash.
+The below shows us the same, but rather than limiting the SQL query to return only the top 5 rows, we save the entire SQL output into a Python variable, and use <code>result.head()</code> to print only the top 5 rows. The start of the SQL command must appear on the same line as the magic command, although it's true that we could continue onto the next line by inserting a backslash, as done below. Note that any spaces after the backslash will cause an error.
 
 ```python
 # capture SQL result in a Python variable
@@ -458,6 +473,8 @@ WHERE TABLE_SCHEMA = 'classicmodels'
 ORDER BY TABLE_NAME, ORDINAL_POSITION;
 ```
 
+<p></p>
+
 ```python
 # inspect top rows with pandas
 result.head()
@@ -467,7 +484,7 @@ result.head()
 
 # Creating a Table
 
-Below, we'll create a new table using <code>mysql-connector</code>, and then prove that it will show in our queries regardless of whether we use a magic command or a shell command.
+Below, we'll create a new table using <code>mysql-connector</code>, and then prove that it shows up regardless of the method of querying.
 
 ```sql
 %%sql
@@ -544,6 +561,7 @@ In a notebook, for the sake of less scrolling, it might be nice to list out fiel
 ```bash
 # customers,employees,offices,orderdetails,orders,payment_view_with_dates,payments,productlines,products,simple_table
 ```
+Another option would have been to extract the data into a Python variable, and then perform a transpose operation.
 
 If we want to insert spaces after each comma, we can do it with the following. 
 
@@ -674,7 +692,7 @@ list_table_columns(host, user, password, database, table)
 
 # Query Examples
 
-We've seen several simple <code>SELECT</code>/<code>FROM</code>/<code>WHERE</code> queries above, so I won't belabour the basics. Below demonstrates various forms of aggregation, using the amount field of the payments table. We need to provide an alias for the aggregated fields, which is the name by which it will appear in the output (even if we are using the same name as the field).
+We've seen several simple <code>SELECT</code>/<code>FROM</code>/<code>WHERE</code> queries above, so I won't belabour the basics. Below demonstrates various forms of aggregation, using the <code>amount</code> field of the payments table. We need to provide an alias for the aggregated fields, which is the name by which it will appear in the output (even if we are using the same name as the field).
 
 ```sql
 %%sql
@@ -702,7 +720,7 @@ SELECT
  GROUP BY customerNumber;
 ```
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-4.png" style="height: 75px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-5.png" style="height: 75px; width:auto;">
 
 To bring in customer name, we can do a join with the customers table. An <code>INNER JOIN</code>, as done below, assumes that we are only interested in records for which the field we are joining on has a match in both tables. An <code>ORDER BY</code> statement is used at the bottom to sort by sum of payments in descending fashion.
 
@@ -719,11 +737,11 @@ GROUP BY customers.customerNumber, customers.customerName
 ORDER BY amount DESC;
 ```
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-5.png" style="height: 400px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-13.png" style="height: 400px; width:auto;">
 
 Let's get a little fancier. Below, we will join more than two tables together, getting the number of employees, number of customers, and sum of payments per office for 2003.
 
-The <code>DISTINCT</code> keyword means that we are not counting the number of rows in the database, as <code>COUNT</code> does, but rather, counting the number of unique values for the specified field. In this case, the level of detail by which we are aggregating is per office.
+The <code>DISTINCT</code> keyword will allow us to, not just count the number of rows in the database, as <code>COUNT</code> does, but rather, count the number of unique values for the specified field. In this case, the level of detail will be by office.
 
 Instead of an <code>INNER JOIN</code>, we will use a <code>LEFT JOIN</code>, which means we keep all records from the 'left' table (i.e., the first one mentioned, offices), and bring in matches from the other tables, but associate null values for the right table with entries on the left which cannot be matched to.
 
@@ -884,15 +902,6 @@ df.head()
 We also have the option of doing a very simple SQL query, and letting Python do the pivoting, as below.
 
 ```python
-<code>SELECT GROUP_CONCAT()</code> combines multiple strings into one, separated by commas. <code>DISTINCT CONCAT()</code>, and the lines within that function, build a string that looks like:
-
-<code>SUM(CASE WHEN YEAR(paymentDate) = 2004 THEN amount ELSE 0 END) AS `2004`</code>
-
-for each year.
-
-Now, we do have the option of letting Python do the pivoting instead, reducing our SQL query to something very simple, like the below.
-
-
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
@@ -931,7 +940,7 @@ df_pivot.head()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-10.png" style="height: 200px; width:auto;">
 
 
-Below, we'll break out the sum of payments at the office, customer, and employee level. Notice that the tables have been aliased, so that they can be reference via abbreviations rather than full names. We use <code>INNER JOIN</code>, which assumes we're not interested in the data for customers or employees to which no sales are associated.
+Below, we'll break out the sum of payments at the office, customer, and employee level. Notice that the tables have been aliased, so that they can be referenced with abbreviations to save us some typing. We use <code>INNER JOIN</code>, thereby assuming we are not interested in the data for customers or employees to which no sales are associated.
 
 ```sql
 %%sql
@@ -954,7 +963,7 @@ ORDER BY o.officeCode, e.employeeNumber, c.customerNumber;
 
 The final SQL-only task, below, will elaborate on the above. The challenge is to:
 
-- Include payment totals for office and employee, despite the data having a by-customer level of detail (assuming we don't have multiple employees per customer). 
+- Include payment totals for office and employee, despite the data having a customer level of detail.
 
 - Include the percentage of office and employee totals accounted for by each row.
 
@@ -964,7 +973,7 @@ The key to this is a window function, combined with the <code>OVER</code> and <c
 
 <code>ROUND(SUM(amount) OVER (PARTITION BY officeCode), 0) AS 'total payments for office'</code>
 
-calculates the total amount paid by all customers in the same office (then rounds that total to the nearest whole number). 
+calculates the total amount paid by all customers in the same office (then applies a <code>ROUND</code> operation). 
 
 <code>RANK() OVER (PARTITION BY officeCode ORDER BY SUM(amount) DESC) AS 'rank in office'</code>
 
@@ -1011,17 +1020,17 @@ ORDER BY officeCode, employeeNumber, customerNumber;
 
 # Integrating Machine Learning
 
-A nice aspect of working with SQL in a Python environment is that machine learning libraries can be immediately integrated. We can import high-level functions for some of the most advanced data science tasks with only a few more lines of code, and wrap SQL extractions in Python loops if the data are too large to work with all at once.
+A nice aspect of working with SQL in a Python environment is that machine learning libraries can be immediately integrated. We can import high-level functions for advanced data science with only a few lines of code, and wrap SQL extractions in Python loops if the data are too large to work with all at once.
 
-SQL offers the ability to create functions as well. For example, we could create a 'fuzzy lookup' function using Levenshtein distance, or a function to calculate the number of working days between dates. However, SQL by itself does not permit data visualization, and machine learning capabilities are very minimal. The below will integrate Python with an SQL query in order to cluster product descriptions based on semantic similarity, and visualize the results in an interactive 3D chart.
+SQL offers the ability to create functions as well. For example, we could create a 'fuzzy lookup' function using Levenshtein distance, or a function to calculate the number of working days between dates. However, SQL by itself does not permit data visualization, and the ability to extend its functionality to machine learning capabilities is minimal. The below will integrate Python with an SQL query in order to cluster product descriptions based on semantic similarity, and visualize the results in an interactive 3D chart.
 
 The challenge is to:
 
-1. From the products table, pull productCode and productName, and from the prodlines table, pull textDescription. Concatenate the productName textDescription.
+1. From the <code>products</code> table, pull <code>productCode</code> and productName, and from the prodlines table, pull <code>textDescription</code>. Concatenate <code>productName</code> with <code>textDescription.</code>
 
-2. Convert the concatenated text to word embeddings: high-dimension vectors of real numbers in continuous space, generated by a neural network, and saved to an importable library. The more similar the description of two products, the closer their respective vectors will point toward each other.
+2. Convert the concatenated text to word embeddings - high-dimension vectors of real numbers in continuous space, generated by a neural network, and saved to an importable library. The more similar the description text, the closer the direction of the vectors (there are other neat capabilities, like analogy calculations).
 
-3. Use a dimensionality reduction technique called UMAP (Uniform Manifold Approximation Projection) to project the high-dimensional data onto a lower-dimensional space we can visualize, with as minimal a loss of information as possible.
+3. Use a dimensionality reduction technique called UMAP (Uniform Manifold Approximation Projection) to project the high-dimensional data onto a lower-dimensional space that we can visualize, with as minimal a loss of information as possible.
 
 4. Visualize in a 3D interactive plot using Plotly.
 
@@ -1115,16 +1124,20 @@ fig.show()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_cht.png" style="height: 400px; width:auto;">
 
 
-To download the html chart, <a href="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_chart.html" download="plotly_chart.html">right-click here</a> and select "Save Link As".
+To zoom in, rotate, and hover over points for labels, download the chart by <a href="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/plotly_chart.html" download="plotly_chart.html">right-clicking here</a> and selecting "Save Link As". Or, download the .ipynb notebook below.
+
+**notebook link**
 
 
 
 
 # What's Next?
 
-- Perhaps some content on update operations and SQL functions
+- Perhaps some content on CRUD (Create, Read, Update, Delete) operations
 
-- Likely an article on JSON-based query language, as with MongoDB
+- Perhaps some content on SQL functions
+
+- Likely an article on JSON-based query language, such as with MongoDB
 
 - Perhaps a Streamlit app with a query sandbox for both languages
 
