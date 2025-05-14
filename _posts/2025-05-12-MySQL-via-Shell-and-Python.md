@@ -748,7 +748,7 @@ GROUP BY customers.customerNumber, customers.customerName
 ORDER BY amount DESC;
 ```
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-13.png" style="height: 400px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/sq1-13.png" style="height: 200px; width:auto;">
 
 Let's get a little fancier. Below, we will join more than two tables together, getting the number of employees, number of customers, and sum of payments per office for 2003.
 
