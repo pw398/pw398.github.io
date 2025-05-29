@@ -131,28 +131,28 @@ db.dropDatabase()
 <code>mongorestore</code> and <code>mongoimport</code> must be run from the command line, not the mongo shell.
 
 
-```cmd
-rem rem import_data.bat
+```text
+# import_data.bat
 
-rem rem the below are optional, but used to avoid hard-coding the import commands further below
-rem HOST = "localhost"
-rem PORT = 27017
+# the below are optional, but used to avoid hard-coding the import commands further below
+HOST = "localhost"
+PORT = 27017
 
-rem DBNAME = "clickstream"
+DBNAME = "clickstream"
 
-rem IMPORT_FILE_FOLDER = r"C:\Users\patwh\Downloads"
-rem BSON_FILE_NAME = "clicks"
-rem JSON_FILE_NAME = "clicks.metadata"
+IMPORT_FILE_FOLDER = r"C:\Users\patwh\Downloads"
+BSON_FILE_NAME = "clicks"
+JSON_FILE_NAME = "clicks.metadata"
 
-rem bson_file = f"{IMPORT_FILE_FOLDER}/{BSON_FILE_NAME}.bson" 
-rem json_file = f"{IMPORT_FILE_FOLDER}/{JSON_FILE_NAME}.json" 
+bson_file = f"{IMPORT_FILE_FOLDER}/{BSON_FILE_NAME}.bson" 
+json_file = f"{IMPORT_FILE_FOLDER}/{JSON_FILE_NAME}.json" 
 
-rem COLLECTION_BSON = BSON_FILE_NAME
-rem COLLECTION_JSON = JSON_FILE_NAME
+COLLECTION_BSON = BSON_FILE_NAME
+COLLECTION_JSON = JSON_FILE_NAME
 
-rem rem import operation
-rem !mongorestore --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_BSON} --drop "{bson_file}"
-rem !mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSON} --drop --type json "{json_file}"
+# import operation
+!mongorestore --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_BSON} --drop "{bson_file}"
+!mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSON} --drop --type json "{json_file}"
 ```
 
 <p></p>
