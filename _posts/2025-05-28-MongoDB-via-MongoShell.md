@@ -566,7 +566,7 @@ load("C:/Users/patwh/Downloads/js_commands/count_unique_values_dynamic.js")
 <p></p>
 
 ```js
-// === Starting Unique Field Count Across Entire Collection ===
+// === Starting Unique Field Count ===
 // 1. _id: 6100000 unique values
 // 2. VisitDateTime: 6089023 unique values
 // 3. webClientID: 1091455 unique values
@@ -579,10 +579,6 @@ load("C:/Users/patwh/Downloads/js_commands/count_unique_values_dynamic.js")
 // 10. device.Browser: 82 unique values
 // 11. device.OS: 18 unique values
 // 12. Activity: 2 unique values
-// 13. _id.serverVersions: 1 unique values
-// 14. _id.platforms: 1 unique values
-// 15. _id.topologies: 1 unique values
-// 16. _id.help: 1 unique values
 // === Done ===
 // true
 ````
@@ -591,27 +587,529 @@ load("C:/Users/patwh/Downloads/js_commands/count_unique_values_dynamic.js")
 
 # CRUD Operations
 
+## Remove and Create
+
+### Remove and Re-Insert the Last Record
+
+Remove the last record from <code>clicks</code> and re-insert it.
+
+```js
+// capture data in a javascript variable
+var lastDoc = db.clicks.find().sort({ _id: -1 }).limit(1).next();
+````
+
+<p></p>
+
+```js
+// {
+//   _id: ObjectId('60df129dad74d9467ceebd51'),
+//   webClientID: 'WI100000118333',
+//   VisitDateTime: ISODate('2018-05-26T11:51:44.263Z'),
+//   ProductID: 'Pr101251',
+//   Activity: 'click',
+//   device: { Browser: 'Chrome', OS: 'Windows' },
+//   user: { City: 'Vijayawada', Country: 'India' }
+// }
+```
+
+<p></p>
+
+```js
+// remove the record from the collection
+db.clicks.deleteOne({ _id: lastDoc._id });
+```
+
+<p></p>
+
+```js
+// { acknowledged: true, deletedCount: 1 }
+````
+
+<p></p>
+
+```js
+// insert the record back into the collection
+db.clicks.insertOne(lastDoc)
+```
+<p></p>
+
+```js
+// {
+//   acknowledged: true,
+//   insertedId: ObjectId('60df129dad74d9467ceebd51')
+// }
+````
+
+
+### Remove and Re-Insert the Last 5 Records
+
+```js
+// capture data in a javascript variable
+var lastDocs = db.clicks.find().sort({ _id: -1 }).limit(5).toArray();
+var idsToDelete = lastDocs.map(doc => doc._id);
+```
+
+<p></p>
+
+```js
+// remove the records from the collection
+db.clicks.deleteOne({ _id: lastDoc._id });
+```
+
+<p></p>
+
+```js
+// { acknowledged: true, deletedCount: 5 }
+```
+
+<p></p>
+
+```js
+// insert them back in
+db.clicks.insertMany(lastDocs);
+````
+
+<p></p>
+
+```js
+// {
+//   acknowledged: true,
+//   insertedIds: {
+//     '0': ObjectId('60df129dad74d9467ceebd51'),
+//     '1': ObjectId('60df129dad74d9467ceebd50'),
+//     '2': ObjectId('60df129dad74d9467ceebd4f'),
+//     '3': ObjectId('60df129dad74d9467ceebd4e'),
+//     '4': ObjectId('60df129dad74d9467ceebd4d')
+//   }
+// }
+```
 
 
 
+## Read
+
+<h3>Filter to <code>_id</code> Equal to <code>60df129dad74d9467ceebd51</code></h3>
+
+```js
+db.clicks.findOne({ _id: ObjectId("60df129dad74d9467ceebd51") });
+```
+
+<p></p>
+
+```js
+// {
+//   _id: ObjectId('60df129dad74d9467ceebd51'),
+//   webClientID: 'WI100000118333',
+//   VisitDateTime: ISODate('2018-05-26T11:51:44.263Z'),
+//   ProductID: 'Pr101251',
+//   Activity: 'click',
+//   device: { Browser: 'Chrome', OS: 'Windows' },
+//   user: { City: 'Vijayawada', Country: 'India' }
+// }
+````
+
+
+### Find First Record Where <code>device.Browser</code> is not Firefox
+
+```js
+db.clicks.findOne({ "device.Browser": "Firefox" });
+```
+
+<p></p>
+
+```js
+// {
+//   _id: ObjectId('60df1029ad74d9467c91a932'),
+//   webClientID: 'WI100000244987',
+//   VisitDateTime: ISODate('2018-05-25T04:51:14.179Z'),
+//   ProductID: 'Pr100037',
+//   Activity: 'click',
+//   device: { Browser: 'Firefox', OS: 'Windows' },
+//   user: { City: 'Colombo', Country: 'Sri Lanka' }
+// }
+````
+
+
+### Find First 2 Records Where <code>device.Browser</code> is not Firefox
+
+```js
+db.clicks.find({ "device.Browser": { $ne: "Firefox" } }).limit(2);
+```
+
+<p></p>
+
+```js
+// [
+//   {
+//     _id: ObjectId('60df1029ad74d9467c91a933'),
+//     webClientID: 'WI10000061461',
+//     VisitDateTime: ISODate('2018-05-25T05:06:03.700Z'),
+//     ProductID: 'Pr100872',
+//     Activity: 'pageload',
+//     device: { Browser: 'Chrome Mobile', OS: 'Android' },
+//     user: {}
+//   },
+//   {
+//     _id: ObjectId('60df1029ad74d9467c91a934'),
+//     webClientID: 'WI10000075748',
+//     VisitDateTime: ISODate('2018-05-17T11:51:09.265Z'),
+//     ProductID: 'Pr100457',
+//     Activity: 'click',
+//     device: { Browser: 'Chrome', OS: 'Linux' },
+//     user: { City: 'Ottawa', Country: 'Canada' }
+//   }
+// ]
+```
 
 
 
+### Find First 2 Records Where <code>device.Browser</code> and <code>VisitDateTime</code> > 5/20/2018
+
+
+```js
+db.clicks.find({
+  "device.Browser": { $exists: true, $ne: null },
+  VisitDateTime: { $gt: new Date("2018-05-20T00:00:00Z") }
+}).limit(2);
+````
+
+<p></p>
+
+```js
+// [
+//   {
+//     _id: ObjectId('60df1029ad74d9467c91a932'),
+//     webClientID: 'WI100000244987',
+//     VisitDateTime: ISODate('2018-05-25T04:51:14.179Z'),
+//     ProductID: 'Pr100037',
+//     Activity: 'click',
+//     device: { Browser: 'Firefox', OS: 'Windows' },
+//     user: { City: 'Colombo', Country: 'Sri Lanka' }
+//   },
+//   {
+//     _id: ObjectId('60df1029ad74d9467c91a933'),
+//     webClientID: 'WI10000061461',
+//     VisitDateTime: ISODate('2018-05-25T05:06:03.700Z'),
+//     ProductID: 'Pr100872',
+//     Activity: 'pageload',
+//     device: { Browser: 'Chrome Mobile', OS: 'Android' },
+//     user: {}
+//   }
+// ]
+```
 
 
 
+### Get the Minimum and Maximum <code>VisitDateTime</code>
+
+```js
+db.clicks.aggregate([
+  { $group: {
+      _id: null,
+      minVisitDateTime: { $min: "$VisitDateTime" },
+      maxVisitDateTime: { $max: "$VisitDateTime" }
+    } }
+]);
+````
+
+<p></p>
+
+```js
+// [
+//   {
+//     _id: null,
+//     minVisitDateTime: ISODate('2018-05-07T00:00:01.190Z'),
+//     maxVisitDateTime: ISODate('2018-05-27T23:59:59.576Z')
+//   }
+// ]
+````
 
 
 
+### Get Count of Records Where <code>VisitDateTime</code> is Greater Than 5/20/2018
+
+```js
+db.clicks.countDocuments({
+  VisitDateTime: { $gt: new Date("2018-05-20T00:00:00Z") }
+});
+````
+
+<p></p>
+
+```js
+// 2453050
+````
+
+
+### Get Count of Records Where <code>user.Country</code> is <code>India</code> or <code>United States</code>
+
+
+#### Using <code>$or</code>
+
+```js
+db.clicks.countDocuments({
+  $or: [
+    { "user.Country": "India" },
+    { "user.Country": "United States" }
+  ]
+});
+````
+
+<p></p>
+
+```js
+// 3497232
+````
+
+
+#### Using <code>$in</code>
+
+```js
+db.clicks.countDocuments({
+  "user.Country": { $in: ["India", "United States"] }
+});
+````
+
+<p></p>
+
+```js
+// 3497232
+```
+
+
+### Get Count of Records Where <code>user.Country</code> is Neither <code>India</code> Nor <code>United States</code>
+
+#### Using <code>$and</code>
+
+```js
+db.clicks.countDocuments({
+  $and: [
+    { "user.Country": { $ne: "India" } },
+    { "user.Country": { $ne: "United States" } }
+  ]
+});
+```
+
+<p></p>
+
+```js
+// 2602768
+```
+
+
+#### Using `$not` and `$in`
+
+```js
+db.clicks.countDocuments({
+  "user.Country": { $not: { $in: ["India", "United States"] } }
+});
+```
+
+<p></p>
+
+```js
+// 2602768
+```
+
+
+#### Using <code>$nin</code>
+
+```js
+db.clicks.countDocuments({
+  "user.Country": { $nin: ["India", "United States"] }
+});
+```
+
+<p></p>
+
+```js
+// 2602768
+```
+
+
+### Get Count of Records with <code>user.UserID</code>
+
+```js
+db.clicks.countDocuments({
+  "user.UserID": { $exists: true, $ne: null }
+});
+````
+
+<p></p>
+
+```js
+// 602293
+```
+
+
+## Update
+
+### Update <code>device.Browser</code> for Record <code>60df129dad74d9467ceebd51</code> to <code>Firefox</code>
+
+```js
+db.collectionName.updateOne(
+  { _id: ObjectId("60df129dad74d9467ceebd51") },
+  { $set: { "device.Browser": "Firefox" } }
+);
+```
+
+<p></p>
+
+```js
+// {
+//   acknowledged: true,
+//   insertedId: null,
+//   matchedCount: 0,
+//   modifiedCount: 0,
+//   upsertedCount: 0
+// }
+```
+
+Set it back to original state for accuracy:
+
+```js
+db.collectionName.updateOne(
+  { _id: ObjectId("60df129dad74d9467ceebd51") },
+  { $set: { "device.Browser": "Chrome" } }
+);
+```
+
+```js
+// {
+//   acknowledged: true,
+//   insertedId: null,
+//   matchedCount: 0,
+//   modifiedCount: 0,
+//   upsertedCount: 0
+// }
+```
+
+
+### Update All <code>device.Browser</code> Records to be <code>Firefox</code>
+
+(If we wanted to; I'll leave it commented out)
+
+```js
+// db.collectionName.updateMany(
+//   {},
+//   { $set: { "device.Browser": "Firefox" } }
+// );
+```
+
+
+### Create New Field
+
+### Add Field Called <code>NewField</code> to First 1000 Records, Set Value to <code>Default</code>
+
+```js
+db.clicks.find().limit(1000).forEach(doc => {
+  db.clicks.updateOne(
+    { _id: doc._id },
+    { $set: { NewField: "Default" } }
+  );
+});
+```
+
+View a record to confirm update:
+
+```js
+db.clicks.findOne({ NewField: "Default" });
+```
+
+<p></p>
+
+```js
+// {
+//   _id: ObjectId('60df1029ad74d9467c91a932'),
+//   webClientID: 'WI100000244987',
+//   VisitDateTime: ISODate('2018-05-25T04:51:14.179Z'),
+//   ProductID: 'Pr100037',
+//   Activity: 'click',
+//   device: { Browser: 'Firefox', OS: 'Windows' },
+//   user: { City: 'Colombo', Country: 'Sri Lanka' },
+//   NewField: 'Default'
+// }
+```
+
+
+### Remove the Added Field
+
+```js
+db.clicks.updateMany(
+  { NewField: { $exists: true } },
+  { $unset: { NewField: "" } }
+);
+```
+
+<p></p>
+
+```js
+// {
+//   acknowledged: true,
+//   insertedId: null,
+//   matchedCount: 1000,
+//   modifiedCount: 1000,
+//   upsertedCount: 0
+// }
+```
 
 
 
+# Indexes
+
+## View Indexes
+
+```js
+db.clicks.getIndexes();
+```
+
+<p></p>
+
+```js
+[ { v: 2, key: { _id: 1 }, name: '_id_' } ]
+```
+
+<p></p>
+
+```js
+db.clicks.metadata.findOne();
+```
+
+<p></p>
+
+```js
+// {
+//   _id: ObjectId('6837ada071d28360c34516c3'),
+//   indexes: [ { v: 2, key: { _id: 1 }, name: '_id_' } ],
+//   uuid: 'ee6da5fe5bdf42b2bc3cecee40723af6',
+//   collectionName: 'clicks'
+}
+```
 
 
+## Create Indexes
 
+```js
+db.clicks.createIndex({ "device.OS": 1 });
+```
 
+<p></p>
 
+```js
+// device.OS_1
+```
 
+<p></p>
+
+```js
+db.clicks.createIndex({ "device.Browser": 1 });
+```
+
+<p></p>
+
+```js
+db.clicks.createIndex({ "device.Browser": 1 });
+```
 
 
 
