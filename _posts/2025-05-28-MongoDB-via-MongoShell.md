@@ -154,8 +154,8 @@ COLLECTION_JSON = JSON_FILE_NAME
 
 <p></p>
 
-```cmd
-rem C:\\Users\\patwh\\Downloads\\import_data.bat
+```python
+C:\Users\patwh\Downloads\import_data.bat
 ```
 
 <p></p>
