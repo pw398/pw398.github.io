@@ -154,7 +154,9 @@ COLLECTION_JSON = JSON_FILE_NAME
 
 <p></p>
 
-filename code removed here
+```cmd
+rem C:\\Users\\patwh\\Downloads\\import_data.bat
+```
 
 <p></p>
 
