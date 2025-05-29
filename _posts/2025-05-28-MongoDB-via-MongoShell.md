@@ -154,9 +154,7 @@ mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSON} --
 
 <p></p>
 
-```cmd
-rem C:\Users\patwh\Downloads\import_data.bat
-```
+filename code removed here
 
 <p></p>
 
