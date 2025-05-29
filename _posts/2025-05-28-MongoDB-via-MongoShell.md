@@ -131,7 +131,7 @@ db.dropDatabase()
 <code>mongorestore</code> and <code>mongoimport</code> must be run from the command line, not the mongo shell.
 
 
-```bat
+```cmd
 rem rem import_data.bat
 
 rem rem the below are optional, but used to avoid hard-coding the import commands further below
@@ -158,7 +158,7 @@ rem !mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSO
 <p></p>
 
 ```cmd
-"C:\Users\patwh\Downloads\import_data.bat"
+C:\Users\patwh\Downloads\import_data.bat
 ```
 
 <p></p>
