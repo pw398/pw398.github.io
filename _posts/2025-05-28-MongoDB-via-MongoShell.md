@@ -131,10 +131,9 @@ db.dropDatabase()
 <code>mongorestore</code> and <code>mongoimport</code> must be run from the command line, not the mongo shell.
 
 
-```text
-# import_data.bat
+import_data.bat:
 
-# the below are optional, but used to avoid hard-coding the import commands further below
+```cmd
 HOST = "localhost"
 PORT = 27017
 
@@ -150,7 +149,7 @@ json_file = f"{IMPORT_FILE_FOLDER}/{JSON_FILE_NAME}.json"
 COLLECTION_BSON = BSON_FILE_NAME
 COLLECTION_JSON = JSON_FILE_NAME
 
-# import operation
+
 !mongorestore --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_BSON} --drop "{bson_file}"
 !mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSON} --drop --type json "{json_file}"
 ```
