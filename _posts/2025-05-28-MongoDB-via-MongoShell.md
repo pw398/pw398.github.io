@@ -5,78 +5,110 @@ date:   2025-05-28 00:00:00 +0000
 categories: MongoDB Bash Python
 ---
 
-Intro text...
+Introductory Text...
 
-Image?
+
+# Prologue
+
+This is the first of three articles on MongoDB. The content will focus on:
+- Article 1: Overview and Platforms
+- Article 2: Aggregation and Pipelines
+- Article 3: Streaming Data and Machine Learning
+
+For this first article, 3 parallel notebooks of code are provided. The below will focus on commands through Mongo shell, while the parallel notebooks provide code for the same actions in Bash (plus Javascript) and PyMongo. 
+
 
 
 # Outline
 
-1. NoSQL Databases
-    - Advantages of Unstructured Data (flexible schema, discuss ACID/CAPS...)
-2. MongoDB
+1. Advantages of Unstructured Databases
+2. MongoDB and Atlas
 3. Installation
-    - Linux Ubuntu, Windows, Conda
-4. Connect to Server
-    - Import Common Libraries
-    - Connect with MongoClient
-5. Import Clickstream Data
-    - Delete DB if Exists (Optional)
-    - Set Variables
-    - List Databases
-6. Select DB and View Collections
-7. View Sample Documents
-8. Count Records
-    - Record Counts by Collectioin
-    - Count of Unique Values by Field
-9. CRUD Operations (Create, Read, Update, Delete) 
+    - Windows
+    - Ubuntu Linux
+    - MongoDB Tools
+    - PyMongo
+4. The Mongo Shell
+    - Capabilities and Limitations
+    - Getting Started
+5. Database Operations
+    - Drop 
+    - Import From File
+        - .bson and .json
+        - .csv
+6. Data Analysis
+    - Dataset
+    - View Collections
+    - Sample Records
+    - Record Counts
+    - Distinct Fields
+    - Distinct Values by Field
+7. CRUD Operations
     - Remove and Create
     - Read
     - Update
-    - Create New Field
-10. Indexing
+8. Indexes
     - View Indexes
     - Create Indexes
 
 
-**review the outline for accuracy**
-
-
-# Introduction
-
-## Advantages of Unstructured Data
-- ...
-- ...
-
-## MongoDB
-- ...
-- ...
 
 
 
-# Installation
-
-- Linux
-- Windows
-- Mongo Tools (mongosrestore, mongodump, etc.)
 
 
 
-# Opening the Mongo Shell
 
-### From the Command Line
+# Advantages of Unstructured Databases
 
-This will default to the localhost server.
+
+
+
+# MongoDB and Atlas
+
+
+
+
+# Installation -> (link to instructions)
+    - Windows
+    - Ubuntu Linux
+    - MongoDB Tools
+    - PyMongo -> (Conda if using Anaconda)
+    - (adding to path)
+
+
+
+# The Mongo Shell
+    - Capabilities and Limitations
+    - Getting Started
+
+
+
+# Getting Started
+
+## Opening the MongoDB Shell (mongosh)
+
+#### From the Command Line
+
+Once installed, we can open the Mongo shell simply by typing <code>mongosh</code> (or the appropriate environment variable name) into the command prompt. 
 
 ```cmd
 mongosh
 ```
+This will default to the localhost server. We can specify an alternative upon opening by using the command:
 
-### Opening it Directly
+```cmd
+mongosh --host <hostname> --port <port>
+```
 
-This will prompt for a server:
+
+#### Opening Directly
+
+In Windows, you could also open the Mongo shell by clicking on the application within file explorer or typing it into the search bar. When doing this, it will prompt for a server, and suggest localhost as a default.
 
 <code>Please enter a MongoDB connection string (Default: mongodb://localhost/):</code>
+
+I will go with localhost. We can type in the string it suggested, or simply press Enter.
 
 ```js
 mongodb://localhost/
@@ -84,6 +116,8 @@ mongodb://localhost/
 
 
 # Show Databases
+
+We can use <code>show dbs</code> or <code>show databases</code> to get the list of currently existing databases. The three listed below are system-related databases which came with the installation.
 
 ```js
 show dbs
@@ -97,11 +131,17 @@ show dbs
 // local         96.00 KiB
 ```
 
-<code>show databases</code> would work equally well.
-
 
 
 # Import Data 
+
+
+
+
+We will be importing clickstream data from a .bson file with the data records, along with a .json file with a single record of metadata.
+
+You may be interested in how to drop this clickstream database, or another that is currently in existence. For that, we simply select the database using <code>use clickstream</code>, and then apply the command <code>db.dropDatabase()</code>.
+
 
 ### Drop clickstream if Exists (Optional)
 
@@ -127,34 +167,29 @@ db.dropDatabase()
 // { ok: 1, dropped: 'clickstream' }
 ```
 
+We will also use the <code>--drop</code> option in our import commands, which will drop any database we are trying to import, prior to the import operation. Although the code in this workbook is almost entirely focused on making commands through the Mongo shell, the Mongo tools such as <code>mongorestore</code> and <code>mongoimport</code> cannot be used through the Mongo shell, and must be called upon from the command line.
 
-<code>mongorestore</code> and <code>mongoimport</code> must be run from the command line, not the mongo shell. 
+The syntax for these commands is evident from the last two lines below. You could use hard-coding and ignore all of the variable-setting done by the preceding lines. The below creates a .bat file which can be run from the command line to import our .bson data file (using <code>mongorestore</code>, and .json metadata (using <code>mongoimport</code>).
 
-Below is what it would look like if executed from a Jupyter notebook. The variable-setting is optional, but serves to let the restore/import commands to act dynamically.
 
-```python
+```bat
 # import_data.bat:
+SET HOST=localhost
+SET PORT=27017
+SET DBNAME=clickstream
+SET IMPORT_FILE_FOLDER=C:\Users\patwh\Downloads
+SET BSON_FILE_NAME=clicks
+SET JSON_FILE_NAME=clicks.metadata
+SET BSON_FILE=%IMPORT_FILE_FOLDER%\%BSON_FILE_NAME%.bson
+SET JSON_FILE=%IMPORT_FILE_FOLDER%\%JSON_FILE_NAME%.json
+SET COLLECTION_BSON=%BSON_FILE_NAME%
+SET COLLECTION_JSON=%JSON_FILE_NAME%
 
-HOST = "localhost"
-PORT = 27017
-
-DBNAME = "clickstream"
-
-IMPORT_FILE_FOLDER = r"C:\Users\patwh\Downloads"
-BSON_FILE_NAME = "clicks"
-JSON_FILE_NAME = "clicks.metadata"
-
-bson_file = f"{IMPORT_FILE_FOLDER}/{BSON_FILE_NAME}.bson" 
-json_file = f"{IMPORT_FILE_FOLDER}/{JSON_FILE_NAME}.json" 
-
-COLLECTION_BSON = BSON_FILE_NAME
-COLLECTION_JSON = JSON_FILE_NAME
-
-!mongorestore --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_BSON} --drop "{bson_file}"
-!mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSON} --drop --type json "{json_file}"
+mongorestore --host %HOST%:%PORT% --db %DBNAME% --collection %COLLECTION_BSON% --drop "%BSON_FILE%"
+mongoimport --host %HOST%:%PORT% --db %DBNAME% --collection %COLLECTION_JSON% --drop --type json "%JSON_FILE%"
 ```
 
-<p></p>
+With the .bat file created, simply call upon it from the command line, replacing my directory below with your own.
 
 ```python
 !"C:/Users/patwh/Downloads/import_data.bat"
@@ -170,6 +205,8 @@ COLLECTION_JSON = JSON_FILE_NAME
 # 2025-05-28T18:38:14.490-0600  dropping: clickstream.clicks.metadata
 # 2025-05-28T18:38:14.507-0600  1 document(s) imported successfully. 0 document(s) failed to import.
 ```
+
+We see that the data file contains 6.1M records, and the metadata file contains only one record. The first step toward viewing the details is to select a database. First, we use <code>show dbs</code> to confirm that our imported data exists, under the name <code>clickstream</code>.
 
 
 # Select Imported DB
@@ -187,7 +224,7 @@ show dbs
 // local         96.00 KiB
 ```
 
-<p></p>
+To select it, we simply use:
 
 ```js
 use clickstream
@@ -201,6 +238,11 @@ use clickstream
 
 
 # Show Collections
+
+Rather than SQL, where we refer to a database as containing tables of fields and records, we say that a MongoDB database contains 'collections' of documents, each of which has a set of fields. Due to the unstructured nature of the data, it is less common to have collections that require joins to others, as you would typically see with SQL.
+
+Below, we list the collections belonging to <code>clickstream</code>.
+
 
 ```js
 show collections
@@ -216,6 +258,8 @@ show collections
 
 
 # Sample Documents
+
+To view the first document found in a collection, we use <code>db.collection.findOne()</code>. Note that the fields we see in this sample are not necessarily representative of the fields contained by other records in the collection. 
 
 ```js
 db.clicks.findOne()
@@ -235,7 +279,9 @@ db.clicks.findOne()
 // }
 ```
 
-<p></p>
+<p>The <code>_id</code>code> field is a unique identifier attached to each record. Duplicate IDs are not permitted, and nor is deleting the field.
+
+We'll take a look at the lone record in the <code>clicks.metadata</code> collection as well.
 
 ```js
 db.clicks.metadata.findOne()
@@ -252,9 +298,13 @@ db.clicks.metadata.findOne()
 // }
 ````
 
+We see that this contains some index information. Indexing will be covered in more detail at the end of this article. 
+
 
 
 # Get Record Counts
+
+We already noticed the number of records in this database upon import, but if we didn't, you would use something like this to assess the count of documents.
 
 ```js
 db.clicks.countDocuments()
@@ -281,7 +331,13 @@ db.clicks.metadata.countDocuments()
 
 # Get List of Distinct Fields
 
-Limiting to 1M records (it's faster with pymongo)
+Below, we'll use a command that is a little more involved than our prior commands. I would like to loop through the documents and determine the list of distinct fields contained by documents in the collection. Javascript is the native language of the Mongo shell, so if we want to create variables and loops, we must either rely on Javascript entered directly into the shell, .js files, or an API like PyMongo. PyMongo would actually execute the below in quicker fashion than the Mongo shell, which is why I'll limit the search to the first 1M records (and focus on PyMongo in the upcoming articles).
+
+
+**why is pymongo faster?**
+
+To run a multi-line command like the following, using the Mongo shell, we can enter each line one at a time and press Enter, and then finally press ctrl+Enter when ready to execute the accumulation of lines. Alternatively, as you will see momentarily, we could put the Javascript into a .js file, and use <code>load(\<file\>)</code> with the Mongo shell to execute.
+
 
 ```js
 (function() {
@@ -309,7 +365,11 @@ Limiting to 1M records (it's faster with pymongo)
 // ]
 ````
 
-Including nested fields:
+
+Great - but working with unstructured data means we could have second-level fields nested within the above. The following script will pull us a unique list include nested fields. It's too lengthy to enter into the shell one line at a time, so we'll save the Javascript to a .js file. 
+
+Though we do not need to create the .js file using the method below, it is convenient to define a Python function which will take in some plain text, clean it if necessary, and output a .js file with the specified directory and filename.
+
 
 ```js
 // Function for Creating .js Files From Text in Python
@@ -339,7 +399,7 @@ def save_js_commands(js_input, js_folder, js_filename):
         return None
 ```
 
-<p></p>
+This next piece of Python code specifies the Javascript as text, and calls upon the above function to create the .js file.
 
 ```python
 # unique_fields_nested.js
@@ -384,7 +444,7 @@ exe_file = f"{js_folder}\\{js_filename}.js"
 # ✅ JavaScript code saved successfully to: C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js
 ```
 
-<p></p>
+The below is what we type into the Mongo shell to execute the .js script. Replace my directory with the directory pertaining to yourself.
 
 ```js
 load("C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js")
@@ -413,7 +473,7 @@ load("C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js")
 
 # Get Number of Distinct Values by Field
 
-Hard-coding the file names above (for speed):
+It would be informative to know how many distinct values correspond to each of the fields in the collection. 
 
 ```python
 js_code = """
@@ -485,8 +545,14 @@ load("C:/Users/patwh/Downloads/js_commands/unique_value_counts_hardcoded_fields.
 // user.UserID: 34051 unique values
 ```
 
+We see some fields we didn't see with the sample document, such as <code>user.UserID</code>.These correspond to users of the Kirana store dataset who have signed up to create an account. 
+
+
 
 ### Dynamic Version (First Finds Fields, then Distinct Value Counts)
+
+
+Finding the unique list of fields and then hard-coding them into the search for distinct values may have saved us some time - or at least, it broke a very long task (given the 6.1M documents) into two shorter tasks. But the code to perform both actions in dynamic fashion, without hard-coding, is provided below.
 
 ```python
 js_code = """
@@ -587,18 +653,24 @@ load("C:/Users/patwh/Downloads/js_commands/count_unique_values_dynamic.js")
 
 # CRUD Operations
 
+Fundamental database operations include creating new records, removing records, updating records, and deleting records - hence the acronym CRUD. The below will demonstrate some examples of each.
+
+
 ## Remove and Create
+
+The task below will be to remove a record, or multiple records, capture the data in a Javascript variable, and then perform an insertion operation to put them back into the collection.
+
 
 ### Remove and Re-Insert the Last Record
 
-Remove the last record from <code>clicks</code> and re-insert it.
+To capture the data of the <code>clicks</code>-collection record that we will momentarily delete, we use the <code>find()</code> operation combined with a <code>sort</code>:
 
 ```js
 // capture data in a javascript variable
 var lastDoc = db.clicks.find().sort({ _id: -1 }).limit(1).next();
 ````
 
-<p></p>
+And the data is then presented in JSON format.
 
 ```js
 // {
@@ -612,7 +684,7 @@ var lastDoc = db.clicks.find().sort({ _id: -1 }).limit(1).next();
 // }
 ```
 
-<p></p>
+Next, we use <code>deleteOne()</code> to remove it from the collection.
 
 ```js
 // remove the record from the collection
@@ -625,7 +697,7 @@ db.clicks.deleteOne({ _id: lastDoc._id });
 // { acknowledged: true, deletedCount: 1 }
 ````
 
-<p></p>
+Finally, we use <code>insertOne()</code> with reference to our stored variable to re-insert the record. If the data were not in JSON format, we would need to transform it to such.
 
 ```js
 // insert the record back into the collection
@@ -643,17 +715,19 @@ db.clicks.insertOne(lastDoc)
 
 ### Remove and Re-Insert the Last 5 Records
 
+Below, same drill as above, but for multiple records at the same time. We capture the data of the last 5 records:
+
 ```js
 // capture data in a javascript variable
 var lastDocs = db.clicks.find().sort({ _id: -1 }).limit(5).toArray();
 var idsToDelete = lastDocs.map(doc => doc._id);
 ```
 
-<p></p>
+Then, apply a delete operation to remove them from the collection:
 
 ```js
 // remove the records from the collection
-db.clicks.deleteOne({ _id: lastDoc._id });
+db.clicks.deleteMany({ _id: { $in: idsToDelete } });
 ```
 
 <p></p>
@@ -662,7 +736,7 @@ db.clicks.deleteOne({ _id: lastDoc._id });
 // { acknowledged: true, deletedCount: 5 }
 ```
 
-<p></p>
+And finally, use <code>insertMany()</code> to insert them back in, all at the same time.
 
 ```js
 // insert them back in
@@ -688,6 +762,9 @@ db.clicks.insertMany(lastDocs);
 
 ## Read
 
+We've done a healthy amount of 'read' operations already, but the below will provide some more examples of how to query for the data you are looking for. First, we'll filter to a particular field, in this case the record ID. No documents have duplicate IDs, so the below <code>findOne()</code> will either return one document or none.
+
+
 <h3>Filter to <code>_id</code> Equal to <code>60df129dad74d9467ceebd51</code></h3>
 
 ```js
@@ -711,6 +788,8 @@ db.clicks.findOne({ _id: ObjectId("60df129dad74d9467ceebd51") });
 
 ### Find First Record Where <code>device.Browser</code> is not Firefox
 
+<p>If multiple records meet the specified criteria of a <code>findOne()</code> query, the first record encountered will be returned. Below, we simply replace the above criteria of having a particular <code>_id</code> code with having a browser of Firefox.</p>
+
 ```js
 db.clicks.findOne({ "device.Browser": "Firefox" });
 ```
@@ -731,6 +810,8 @@ db.clicks.findOne({ "device.Browser": "Firefox" });
 
 
 ### Find First 2 Records Where <code>device.Browser</code> is not Firefox
+
+If wanting to return more than one document, we use <code>find()</code> rather than <code>findOne()</code>. We can use <code>limit</code> as done below in order to truncate the data returned to a certain number of records - in this case, the first two records where the browser is not equal to Firefox, using the <code>$ne</code> (not equal) operator.
 
 ```js
 db.clicks.find({ "device.Browser": { $ne: "Firefox" } }).limit(2);
@@ -765,10 +846,10 @@ db.clicks.find({ "device.Browser": { $ne: "Firefox" } }).limit(2);
 
 ### Find First 2 Records Where <code>device.Browser</code> and <code>VisitDateTime</code> > 5/20/2018
 
+Of course, we also have comparison operators such as <code>$gt</code>, used below to get the first two records which have a date later than May 20.
 
 ```js
 db.clicks.find({
-  "device.Browser": { $exists: true, $ne: null },
   VisitDateTime: { $gt: new Date("2018-05-20T00:00:00Z") }
 }).limit(2);
 ````
@@ -802,6 +883,9 @@ db.clicks.find({
 
 ### Get the Minimum and Maximum <code>VisitDateTime</code>
 
+To get the minimum and maximum values of a field that spans a numerical or date-based range, we can use something like the following. Aggregation will be covered further in the following articles.
+
+
 ```js
 db.clicks.aggregate([
   { $group: {
@@ -828,6 +912,8 @@ db.clicks.aggregate([
 
 ### Get Count of Records Where <code>VisitDateTime</code> is Greater Than 5/20/2018
 
+We can use <code>countDocuments()</code> as we did to get the count of records in a collection, but apply a filter such as the one we used just above. Below, we see that about 2.45M records have a date greater than May 20.
+
 ```js
 db.clicks.countDocuments({
   VisitDateTime: { $gt: new Date("2018-05-20T00:00:00Z") }
@@ -842,6 +928,8 @@ db.clicks.countDocuments({
 
 
 ### Get Count of Records Where <code>user.Country</code> is <code>India</code> or <code>United States</code>
+
+
 
 
 #### Using <code>$or</code>
@@ -1108,7 +1196,7 @@ db.clicks.createIndex({ "device.Browser": 1 });
 <p></p>
 
 ```js
-db.clicks.createIndex({ "device.Browser": 1 });
+// device.OS_1
 ```
 
 
