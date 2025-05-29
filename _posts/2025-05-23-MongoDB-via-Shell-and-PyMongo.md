@@ -725,25 +725,453 @@ pp.pprint(record)
 
 ### Find First Record Where <code>device.Browser</code> is not Firefox
 
+```python
+first_record = collection.find_one({"device.Browser": {"$ne": "Firefox"}})
+print("First record where Browser is not Firefox:")
+pp.pprint(first_record)
+```
+
+<p></p>
+
+```python
+# First record where Browser is not Firefox:
+# {'Activity': 'pageload',
+#  'ProductID': 'Pr100872',
+#  'VisitDateTime': datetime.datetime(2018, 5, 25, 5, 6, 3, 700000),
+#  '_id': ObjectId('60df1029ad74d9467c91a933'),
+#  'device': {'Browser': 'Chrome Mobile', 'OS': 'Android'},
+#  'user': {},
+#  'webClientID': 'WI10000061461'}
+```
+
+
+### Find First 2 Records Where <code>device.Browser</code> is not Firefox
+
+
+```python
+two_records = list(collection.find({"device.Browser": {"$ne": "Firefox"}}).limit(2))
+print("First two records where Browser is not Firefox:")
+pp.pprint(two_records)
+```
+
+<p></p>
+
+
+```python
+# First two records where Browser is not Firefox:
+# [{'Activity': 'pageload',
+#   'ProductID': 'Pr100872',
+#   'VisitDateTime': datetime.datetime(2018, 5, 25, 5, 6, 3, 700000),
+#   '_id': ObjectId('60df1029ad74d9467c91a933'),
+#   'device': {'Browser': 'Chrome Mobile', 'OS': 'Android'},
+#   'user': {},
+#   'webClientID': 'WI10000061461'},
+#  {'Activity': 'click',
+#   'ProductID': 'Pr100457',
+#   'VisitDateTime': datetime.datetime(2018, 5, 17, 11, 51, 9, 265000),
+#   '_id': ObjectId('60df1029ad74d9467c91a934'),
+#   'device': {'Browser': 'Chrome', 'OS': 'Linux'},
+#   'user': {'City': 'Ottawa', 'Country': 'Canada'},
+#   'webClientID': 'WI10000075748'}]
+```
+
+
+### Find Last 2 Records Where <code>device.Browser</code> is not Firefox
+
+
+```python
+last_two_records = list(collection.find({"device.Browser": {"$ne": "Firefox"}}).sort("_id", -1).limit(2))
+print("Last two records where Browser is not Firefox:")
+pp.pprint(last_two_records)
+```
+
+<p></p>
+
+```python
+# Last two records where Browser is not Firefox:
+# [{'Activity': 'click',
+#   'ProductID': 'Pr101251',
+#   'VisitDateTime': datetime.datetime(2018, 5, 26, 11, 51, 44, 263000),
+#   '_id': ObjectId('60df129dad74d9467ceebd51'),
+#   'device': {'Browser': 'Chrome', 'OS': 'Windows'},
+#   'user': {'City': 'Vijayawada', 'Country': 'India'},
+#   'webClientID': 'WI100000118333'},
+#  {'Activity': 'pageload',
+#   'ProductID': 'Pr100004',
+#   'VisitDateTime': datetime.datetime(2018, 5, 8, 14, 16, 28, 291000),
+#   '_id': ObjectId('60df129dad74d9467ceebd50'),
+#   'device': {'Browser': 'HeadlessChrome', 'OS': 'Linux'},
+#   'user': {'City': 'Mountain View', 'Country': 'United States'},
+#   'webClientID': 'WI1000002001'}]
+```
+
+
+### Find First 2 Records Where <code>device.Browser</code> and <code>VisitDateTime</code> > 5/20/2018
+
+
+```python
+two_records = list(collection.find({
+    "device.Browser": {"$ne": "Firefox"},
+    "VisitDateTime": {"$gt": datetime(2018, 5, 20)}
+}).limit(2))
+print("First two records where Browser is not Firefox and VisitDateTime > May 20, 2018:")
+pp.pprint(two_records)
+```
+
+<p></p>
+
+```python
+# First two records where Browser is not Firefox and VisitDateTime > May 20, 2018:
+# [{'Activity': 'pageload',
+#   'ProductID': 'Pr100872',
+#   'VisitDateTime': datetime.datetime(2018, 5, 25, 5, 6, 3, 700000),
+#   '_id': ObjectId('60df1029ad74d9467c91a933'),
+#   'device': {'Browser': 'Chrome Mobile', 'OS': 'Android'},
+#   'user': {},
+#   'webClientID': 'WI10000061461'},
+#  {'Activity': 'pageload',
+#   'ProductID': 'Pr100862',
+#   'VisitDateTime': datetime.datetime(2018, 5, 23, 13, 48, 9, 638000),
+#   '_id': ObjectId('60df1029ad74d9467c91a937'),
+#   'device': {'Browser': 'Chrome', 'OS': 'Windows'},
+#   'user': {'Country': 'India'},
+#   'webClientID': 'WI100000397087'}]
+```
+
+
+### Get the Minimum and Maximum <code>VisitDateTime</code>
+
+
+```python
+result = collection.aggregate([
+    {
+        "$group": {
+            "_id": None,
+            "minDate": {"$min": "$VisitDateTime"},
+            "maxDate": {"$max": "$VisitDateTime"}
+        }
+    }
+])
+result = list(result)[0] if result else {"minDate": None, "maxDate": None}
+print("Minimum VisitDateTime:", result["minDate"])
+print("Maximum VisitDateTime:", result["maxDate"])
+```
+
+<p></p>
+
+```python
+# Minimum VisitDateTime: 2018-05-07 00:00:01.190000
+# Maximum VisitDateTime: 2018-05-27 23:59:59.576000
+```
+
+
+### Get Count of Records Where <code>VisitDateTime</code> is Greater Than 5/20/2018
+
+
+```python
+count = collection.count_documents({"VisitDateTime": {"$gt": datetime(2018, 5, 20)}})
+print("Count of records with VisitDateTime > May 20, 2018:", count)
+```
+
+<p></p>
+
+```python
+# Count of records with VisitDateTime > May 20, 2018: 2453050
+```
+
+
+### Get Count of Records Where <code>user.Country</code> is <code>India</code> or <code>United States</code>
+
+#### Using <code>$or</code>
+
+```python
+count = collection.count_documents({"$or": [{"user.Country": "India"}, {"user.Country": "United States"}]})
+print("Number of records where Country is India or United States:", count)
+```
+
+<p></p>
+
+```python
+# Number of records where Country is India or United States: 3497232
+```
+
+
+#### Using <code>$in</code>
+
+```python
+count = collection.count_documents({"user.Country": {"$in": ["India", "United States"]}})
+print("Number of records where Country is India or United States:", count)
+```
+
+<p></p>
+
+```python
+# Number of records where Country is India or United States: 3497232
+```
+
+
+### Get Count of Records Where <code>user.Country</code> is Neither <code>India</code> Nor <code>United States</code>
+
+#### Using <code>$and</code>
+
+```python
+count = collection.count_documents({
+    "$and": [
+        {"user.Country": {"$ne": "India"}},
+        {"user.Country": {"$ne": "United States"}}
+    ]
+})
+print("Number of records where Country is neither India nor United States:", count)
+```
+
+<p></p>
+
+```python
+# Number of records where Country is neither India nor United States: 2602768
+```
+
+
+#### Using `$not` and `$nin`
+
+```python
+count = collection.count_documents({"user.Country": {"$not": {"$in": ["India", "United States"]}}})
+print("Number of records where Country is neither India nor United States:", count)
+```
+
+<p></p>
+
+```python
+# Number of records where Country is neither India nor United States: 2602768
+```
+
+
+#### Using <code>$nin</code>
+
+```python
+count = collection.count_documents({"user.Country": {"$nin": ["India", "United States"]}})
+print("Number of records where Country is neither India nor United States:", count)
+```
+
+<p></p>
+
+```python
+Number of records where Country is neither India nor United States: 2602768
+```
+
+
+### Get Count of Records with <code>user.UserID</code>
+
+```python
+count = collection.count_documents({"user.UserID": {"$exists": True}})
+print(f"Records with user.UserID: {count}")
+```
+
+<p></p>
+
+```python
+# Records with user.UserID: 602293
+```
+
+About 1/10 of recorded actions correspond to a customer with a user ID.
+
+**link to user docs which elaborate on operators?**
 
 
 
+## Update
+
+### Update <code>device.Browser</code> for Record <code>60df129dad74d9467ceebd51</code> to <code>Firefox</code>
+
+```python
+collection.update_one(
+    {"_id": ObjectId("60df129dad74d9467ceebd51")},
+    {"$set": {"device.Browser": "Firefox"}}
+)
+print("Updated device.Browser to Firefox for _id 60df129dad74d9467ceebd51")
+```
+
+<p></p>
+
+```python
+# Updated device.Browser to Firefox for _id 60df129dad74d9467ceebd51
+```
+
+Set it back to original state for accuracy:
+
+
+```python
+collection.update_one(
+    {"_id": ObjectId("60df129dad74d9467ceebd51")},
+    {"$set": {"device.Browser": "Chrome"}}
+)
+print("Updated device.Browser to Chrome for _id 60df129dad74d9467ceebd51")
+```
+
+<p></p>
+
+```python
+Updated device.Browser to Chrome for _id 60df129dad74d9467ceebd51
+```
+
+
+### Update All <code>device.Browser</code> Records to be <code>Firefox</code>
+
+
+**do something like rename Firefox Mobile to Firefox...**
+
+
+```python
+# collection.update_many(
+#     {},
+#     {"$set": {"device.Browser": "Firefox"}}
+# )
+# print("Updated device.Browser to Firefox for all records")
+```
+
+
+### Create New Field
+
+We'll apply to only 1000 records to keep the run-time down
+But the next article will involve creating a field to classify each rec as having a desktop OS or mobile OS
+
+
+### Add Field Called <code>NewField</code> to First 1000 Records, Set Value to <code>Default</code>
+
+```python
+# Get _ids of first 1000 records
+batch_ids = [doc["_id"] for doc in collection.find({}, {"_id": 1}).limit(1000)]
+
+# Add NewField to those records
+if batch_ids:
+    collection.update_many(
+        {"_id": {"$in": batch_ids}},
+        {"$set": {"NewField": "Default"}}
+    )
+print(f"Completed: Added NewField to first 1000 records")
+print("")
+print("Sample Record:")
+pp.pprint(collection.find_one())
+```
+
+<p></p>
+
+```python
+# Completed: Added NewField to first 1000 records
+
+# Sample Record:
+# {'Activity': 'click',
+#  'NewField': 'Default',
+#  'ProductID': 'Pr100037',
+#  'VisitDateTime': datetime.datetime(2018, 5, 25, 4, 51, 14, 179000),
+#  '_id': ObjectId('60df1029ad74d9467c91a932'),
+#  'device': {'Browser': 'Firefox', 'OS': 'Windows'},
+#  'user': {'City': 'Colombo', 'Country': 'Sri Lanka'},
+#  'webClientID': 'WI100000244987'}
+```
+
+
+### Remove the Added Field
+
+
+```python
+# Get _ids of first 1000 records
+batch_ids = [doc["_id"] for doc in collection.find().limit(1000)]
+
+# Remove NewField from those records
+if batch_ids:
+    collection.update_many(
+        {"_id": {"$in": batch_ids}},
+        {"$unset": {"NewField": ""}}
+    )
+print("Completed: Removed NewField from first 1000 records")
+print("")
+print("Sample Record:")
+pp.pprint(collection.find_one())
+```
 
 
 
+# Indexes
+
+Grok: mongorestore will skip restoring indexes if --noIndexRestore is used, but otherwise, will incorporate that metadata into the restore process so that the collection uses those indexes.
 
 
+## View Indexes
+
+```python
+print(list(db['clicks'].index_information()))
+```
+
+<p></p>
+
+```python
+['_id_']
+```
+
+<p></p>
+
+```python
+db['clicks.metadata'].find_one()
+```
+
+<p></p>
+
+```python
+# {'_id': ObjectId('68350cf809eca3b53f68e73c'),
+#  'indexes': [{'v': 2, 'key': {'_id': 1}, 'name': '_id_'}],
+#  'uuid': 'ee6da5fe5bdf42b2bc3cecee40723af6',
+#  'collectionName': 'clicks'}
+```
+
+If we wanted to add an index to metadata and then apply it without doing a restore:
+
+```python
+# with open('clicks.metadata.json') as file:
+#     metadata = json.load(file)
+# if not isinstance(metadata, list):
+#     metadata = [metadata]
+# for meta_doc in metadata:
+#     if isinstance(meta_doc, str):
+#         meta_doc = json.loads(meta_doc)
+#     for index in meta_doc.get('indexes', []):
+#         if index.get('name') != '_id_':
+#             key = [(k, v.get('$numberInt', v) if isinstance(v, dict) else v) for k, v in index.get('key', {}).items()]
+#             index_options = {k: v for k, v in index.items() if k not in ['v', 'key', 'name']}
+#             index_options['name'] = index.get('name', 'unnamed_index')
+#             clicks_collection.create_index(key, **index_options)
+```
+
+Grok: "unnamed_index" is a default name used when an index definition in clicks.metadata.json (e.g., for ProductID) lacks a name key. It ensures create_index has a valid name, preventing auto-generated names. The line makes the code robust to incomplete metadata, relevant for applying the ProductID index to optimize clicks queries.
 
 
+## Create Indexes
 
+```python
+collection.create_index('device.OS')
+collection.create_index('device.Browser')
+```
 
+<p></p>
 
+```python
+# Time to Create Index: 81 seconds
+```
 
+Confirm.
 
+```python
+indexes = collection.index_information()
+for index_name, index_info in indexes.items():
+    print(f"Index: {index_name}, Fields: {index_info['key']}")
+```
 
+<p></p>
 
-
-
+```python
+Index: _id_, Fields: [('_id', 1)]
+Index: device.OS_1, Fields: [('device.OS', 1)]
+Index: device.Browser_1, Fields: [('device.Browser', 1)]
+```
 
 
 
