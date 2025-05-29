@@ -148,8 +148,8 @@ json_file = f"{IMPORT_FILE_FOLDER}/{JSON_FILE_NAME}.json"
 COLLECTION_BSON = BSON_FILE_NAME
 COLLECTION_JSON = JSON_FILE_NAME
 
-mongorestore --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_BSON} --drop "{bson_file}"
-mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSON} --drop --type json "{json_file}"
+!mongorestore --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_BSON} --drop "{bson_file}"
+!mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {COLLECTION_JSON} --drop --type json "{json_file}"
 ```
 
 <p></p>
@@ -158,13 +158,13 @@ filename code removed here
 
 <p></p>
 
-```cmd 
-rem 2025-05-28T18:38:13.827-0600  finished restoring clickstream.clicks (6100000 documents, 0 failures)
-rem 2025-05-28T18:38:13.827-0600  no indexes to restore for collection clickstream.clicks
-rem 2025-05-28T18:38:13.827-0600  6100000 document(s) restored successfully. 0 document(s) failed to restore.
-rem 2025-05-28T18:38:14.488-0600  connected to: mongodb://localhost:27017/
-rem 2025-05-28T18:38:14.490-0600  dropping: clickstream.clicks.metadata
-rem 2025-05-28T18:38:14.507-0600  1 document(s) imported successfully. 0 document(s) failed to import.
+```python 
+# 2025-05-28T18:38:13.827-0600  finished restoring clickstream.clicks (6100000 documents, 0 failures)
+# 2025-05-28T18:38:13.827-0600  no indexes to restore for collection clickstream.clicks
+# 2025-05-28T18:38:13.827-0600  6100000 document(s) restored successfully. 0 document(s) failed to restore.
+# 2025-05-28T18:38:14.488-0600  connected to: mongodb://localhost:27017/
+# 2025-05-28T18:38:14.490-0600  dropping: clickstream.clicks.metadata
+# 2025-05-28T18:38:14.507-0600  1 document(s) imported successfully. 0 document(s) failed to import.
 ```
 
 
