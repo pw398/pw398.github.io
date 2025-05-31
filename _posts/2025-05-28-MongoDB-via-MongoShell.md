@@ -5,27 +5,19 @@ date:   2025-05-28 00:00:00 +0000
 categories: MongoDB Bash Python
 ---
 
-Introductory Text...
 
-
-# Prologue
-
-This is the first of three articles on MongoDB. The content will focus on:
-- Article 1: Overview and Platforms
-- Article 2: Aggregation and Pipelines
-- Article 3: Streaming Data and Machine Learning
-
-For this first article, 3 parallel notebooks of code are provided. The below will focus on commands through Mongo shell, while the parallel notebooks provide code for the same actions in Bash (plus Javascript) and PyMongo. 
+This is the first of 3 articles on MongoDB and the power of unstructured databases. The focus is on using the Mongo shell, though parallel resources linked to within utilize command-line (Bash) and PyMongo commands.
 
 
 
 # Outline
 
-1. Advantages of Unstructured Databases
-2. MongoDB and Atlas
+1. ...
+2. ...
 3. Installation
     - Windows
     - Ubuntu Linux
+    - Mac?
     - MongoDB Tools
     - PyMongo
 4. The Mongo Shell
@@ -53,34 +45,42 @@ For this first article, 3 parallel notebooks of code are provided. The below wil
 
 
 
+Unstructured databases have greatly increased in popularity over the past 15 years, addressing the need to manage increasingly large, diverse, and evolving data. The lack of adherence to a rigide schema allows data to be stored in variable formats, rather than pre-specified columns, and this flexibility is well-suited toward modern data sources such as multimedia with metadata, text data, and embedded or hierarchical data. Normalization and joins are avoided, lending toward the ability to horizontally scale compute resources, and this is heavily relied upon by organizations who deal with massive amounts of web transactions and traffic.
 
+MongoDB is the most popular of the unstructured databases, with a large developer community, integration with a multitude of programming languages, and cloud service called MongoDB Atlas. The native language for command-line instructions is Javascript, however the Mongo shell provides its own simplified language. The 'documents' - analogous to records in a structured database - are in a JSON-like format, and are organized into 'collections', the unstructured analog to a structured database table.
 
+In this article, we will focus on making commands through the Mongo shell, which is the simplest method. However, parallel notebooks utilizing Python (PyMongo) and command line (Bash) are provided, in the locations listed below.
 
+- **link1** (the mongo shell workbook)
+- **link2**
+- **link3**
 
-
-
-# Advantages of Unstructured Databases
-
-
-
-
-# MongoDB and Atlas
+In subsequent articles, we will simplify the structure by focusing on PyMongo. The content of this article will provide an overview, the second article will focus on aggregation pipelines, and the third article on deploying machine learning on streaming text data.
 
 
 
 
 # Installation -> (link to instructions)
-    - Windows
-    - Ubuntu Linux
-    - MongoDB Tools
-    - PyMongo -> (Conda if using Anaconda)
-    - (adding to path)
+
+The MongoDB website has robust tutorials for installation. Be sure to get the Mongo shell and add it to PATH so you can follow along with the below. Although the code is provided in a notebook-format, the commands in this article will only work through the Mongo shell (opened directly or through <code>mongosh</code> from the command line). The code in the parallel notebooks linked to above will.
+
+- <a href="https://www.mongodb.com/docs/manual/installation/">MongoDB Installation Tutorials</a>
+
+- <a href="https://www.mongodb.com/try/download/shell">MongoDB Shell</a>
+
+Also, regardless of which language or platform you plan on using, be sure to get the MongoDB command line tools, as this will be essential toward actions like reading and writing to file.
+
+- <a href="https://www.mongodb.com/try/download/database-tools">MongoDB Command Line Tools</a>
+
+For PyMongo, if you are using Anaconda, I recommend using <code>conda install pymongo</code> from the Anaconda command prompt (<code>conda activate base</code> to activate it from the general command prompt). Otherwise, review the instructions <code>here</code>.
 
 
 
 # The Mongo Shell
-    - Capabilities and Limitations
-    - Getting Started
+
+The capabilities of the Mongo shell include performing CRUD (create, read, update, delete) operations, querying and index management, user and database administration, aggregation pipelines, and Javascript support. The commands are generally simpler and less verbose than using the APIs, however it is not optimized for large-scale data processing, whereas the APIs like PyMongo are more capable for this purpose.
+
+Multi-line commands can be entered by pressing Enter to move to the next line, and then ctrl+Enter when ready to execute. This can be cumbersome for complex commands, though you can use <code>load()</code> to execute the contents of a Javascript file.
 
 
 
