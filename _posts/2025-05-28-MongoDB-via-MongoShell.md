@@ -461,6 +461,13 @@ load("C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js")
 
 
 
+
+**dynamic recursive method**
+
+
+
+
+
 # Get Number of Distinct Values by Field
 
 It would be informative to see how many distinct values correspond to each of the fields in the collection. For that, we can use the following.
@@ -926,7 +933,11 @@ db.clicks.countDocuments({
 ````
 
 
+
 ### Get Count of Records Where <code>user.Country</code> is <code>India</code> or <code>United States</code>
+
+Below, we'll focus on logical and array operators, many of which have identical counterparts in SQL. We'll see that there is often an array-operator equivalent to a logical-operator, though array operators are often favorable in terms of the amount of typing, if dealing with a large list of desired or undesired values.
+
 
 
 #### Using <code>$or</code>
@@ -947,7 +958,11 @@ db.clicks.countDocuments({
 ````
 
 
+
 #### Using <code>$in</code>
+
+Below, we get the same result by using the <code>$in</code> operator, and passing in a list of countries for which we will consider the corresponding records.
+
 
 ```js
 db.clicks.countDocuments({
@@ -962,7 +977,12 @@ db.clicks.countDocuments({
 ```
 
 
+
 ### Get Count of Records Where <code>user.Country</code> is Neither <code>India</code> Nor <code>United States</code>
+
+Now, let's do the opposite. How many users are in neither India or the United States?
+
+
 
 #### Using <code>$and</code>
 
@@ -982,7 +1002,11 @@ db.clicks.countDocuments({
 ```
 
 
+
 #### Using `$not` and `$in`
+
+We can combine <code>$not</code> with <code>$in</code> to get the (count of) users that are 'not in' the list of countries provided.
+
 
 ```js
 db.clicks.countDocuments({
@@ -999,6 +1023,9 @@ db.clicks.countDocuments({
 
 #### Using <code>$nin</code>
 
+Unlike SQL, we also have a <code>$nin</code> shortcut which stands for 'not in'.
+
+
 ```js
 db.clicks.countDocuments({
   "user.Country": { $nin: ["India", "United States"] }
@@ -1012,7 +1039,12 @@ db.clicks.countDocuments({
 ```
 
 
+
 ### Get Count of Records with <code>user.UserID</code>
+
+
+The e-commerce store is likely very interested in the amount of traffic which corresponds to people who have created an account. Below, we count the instances of <code>user.UserID</code>, and find that only about a tenth of traffic corresponds to this.
+
 
 ```js
 db.clicks.countDocuments({
@@ -1027,9 +1059,17 @@ db.clicks.countDocuments({
 ```
 
 
+
 ## Update
 
+Now for some document-update operations.
+
+
+
 ### Update <code>device.Browser</code> for Record <code>60df129dad74d9467ceebd51</code> to <code>Firefox</code>
+
+To update a record, using a toy example, we'll use the <code>$set</code> operator along with <code>updateOne</code> to set the browser of the record with a particular ID to <code>Firefox</code>.
+
 
 ```js
 db.collectionName.updateOne(
@@ -1050,7 +1090,9 @@ db.collectionName.updateOne(
 // }
 ```
 
-Set it back to original state for accuracy:
+
+But we don't want to comprise the accuracy of further operations, so we'll wet it back to original state to avoid that.
+
 
 ```js
 db.collectionName.updateOne(
@@ -1070,9 +1112,12 @@ db.collectionName.updateOne(
 ```
 
 
+
 ### Update All <code>device.Browser</code> Records to be <code>Firefox</code>
 
-(If we wanted to; I'll leave it commented out)
+
+If we wanted to update a list of records, we would use <code>updateMany</code> along with <code>$set</code>.
+
 
 ```js
 // db.collectionName.updateMany(
@@ -1082,7 +1127,12 @@ db.collectionName.updateOne(
 ```
 
 
+
 ### Create New Field
+
+
+What if we want to create an entirely new field? Well, similar to a new database or collection, there is no need to define it explicitly beforehand. When data is inserted (and only when data gets inserted), then the new dimension is instantiated. So below we'll simply use <code>$set</code> along with the name of our new toy field, and the value we wish to populate. I've limited it to 1000 records because it takes a long time to create a new field for all 6.1M records, although we'll do it in the next article using PyMongo, which is better-suited toward that.
+
 
 ### Add Field Called <code>NewField</code> to First 1000 Records, Set Value to <code>Default</code>
 
@@ -1095,7 +1145,7 @@ db.clicks.find().limit(1000).forEach(doc => {
 });
 ```
 
-View a record to confirm update:
+We view a record to confirm the update:
 
 ```js
 db.clicks.findOne({ NewField: "Default" });
@@ -1117,7 +1167,12 @@ db.clicks.findOne({ NewField: "Default" });
 ```
 
 
+
 ### Remove the Added Field
+
+
+Naturally, you're wondering, how do we remove a field? We'll return to our toy example, and fittingly, use the <code>$unset</code> operator to remove it. We can achieve the effect by setting the value to blank, as below.
+
 
 ```js
 db.clicks.updateMany(
@@ -1137,6 +1192,19 @@ db.clicks.updateMany(
 //   upsertedCount: 0
 // }
 ```
+
+<p></p>
+
+But it's also the case that we could use the following, not specifying blanks as the new value, but using a <code>1</code> to indicate the field should be applied to the <code>$unset</code> command.
+
+
+```js
+db.clicks.updateMany(
+  { [fieldToRemove]: { $exists: true } },
+  { $unset: { [fieldToRemove]: 1 } }
+);
+````
+
 
 
 
