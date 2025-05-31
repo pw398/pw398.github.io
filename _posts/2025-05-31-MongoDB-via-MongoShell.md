@@ -9,6 +9,10 @@ categories: MongoDB Bash Python
 This is the first of 3 articles on MongoDB and the power of unstructured databases. The focus is on the Mongo shell, though parallel resources linked to within utilize command-line (Bash) and Python (PyMongo) commands.
 
 
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/refs/heads/main/_posts/images/1-1.png" style="height: 500px; width:auto;">
+
+
+
 
 # Outline
 
@@ -32,6 +36,7 @@ This is the first of 3 articles on MongoDB and the power of unstructured databas
 14. Indexes
     - View Indexes
     - Create Indexes
+
 
 
 
@@ -159,7 +164,7 @@ db.dropDatabase()
 
 Although the code in this workbook is almost entirely focused on making commands through the Mongo shell, the Mongo tools such as <code>mongorestore</code> and <code>mongoimport</code> cannot be used through the Mongo shell, and must be called upon from the command line.
 
-The syntax for these commands is evident from the last two lines below. You could use hard-coding and ignore all of the variable-setting done by the preceding lines. The below creates a .bat file which can be run from the command line to import our .bson data file (using <code>mongorestore</code>, and .json metadata (using <code>mongoimport</code>).
+The syntax for these commands is evident from the last two lines below. You could use hard-coding and ignore all of the variable-setting done by the preceding lines. The below creates a <code>.bat</code> file which can be run from the command line to import our <code>.bson</code> data file (using <code>mongorestore</code>, and <code>.json</code> metadata (using <code>mongoimport</code>).
 
 
 ```bash
@@ -1181,7 +1186,7 @@ db.clicks.updateMany(
 
 <p></p>
 
-But it's also the case that we could use the following, not specifying blanks as the new value, but using a <code>1</code> to indicate the field should be applied to the <code>$unset</code> command.
+It's also the case that we could use the following, not specifying blanks as the new value, but using a <code>1</code> to indicate the field should be applied to the <code>$unset</code> command.
 
 
 ```js
@@ -1199,7 +1204,7 @@ db.clicks.updateMany(
 ## View Indexes
 
 
-Indexes are structures that improve the speed and efficiency of queries by creating a sorted mapping from the indexed fields to the location of documents. This allows a query to utilize information about which documents may be ignored, resulting in the search for applicable records not to require a scan of every document in the database. The <code>!mongorestore</code> command does automatically associate indexes listed in the metadata (<code>.json</code> file) with the data (the <code>.bson</code>) file.
+Indexes are structures that improve the speed and efficiency of queries by creating a sorted mapping from the indexed fields to the location of documents. This allows a query to utilize information about which documents may be ignored, resulting in the search for applicable records not to require a scan of every document in the database. The <code>mongorestore</code> command does automatically associate indexes listed in the metadata (<code>.json</code> file) with the data (the <code>.bson</code>) file.
 
 To check which indexes exist, we can use the following.
 
@@ -1213,7 +1218,7 @@ db.clicks.getIndexes();
 [ { v: 2, key: { _id: 1 }, name: '_id_' } ]
 ```
 
-<p>We see it only relates to the <code>_id</code> field, which will always be an index, by default.
+<p>We see it only relates to the <code>_id</code> field, which will always be an index, by default.</p>
 
 
 ```js
