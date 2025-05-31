@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "MongoDB via Mongo Shell"
+title:  "MongoDB Overview via Mongo Shell"
 date:   2025-05-28 00:00:00 +0000
 categories: MongoDB Bash Python
 ---
@@ -12,47 +12,40 @@ This is the first of 3 articles on MongoDB and the power of unstructured databas
 
 # Outline
 
-1. ...
-2. ...
-3. Installation
-    - Windows
-    - Ubuntu Linux
-    - Mac?
-    - MongoDB Tools
-    - PyMongo
-4. The Mongo Shell
-    - Capabilities and Limitations
-    - Getting Started
-5. Database Operations
-    - Drop 
-    - Import From File
-        - .bson and .json
-        - .csv
-6. Data Analysis
-    - Dataset
-    - View Collections
-    - Sample Records
-    - Record Counts
-    - Distinct Fields
-    - Distinct Values by Field
-7. CRUD Operations
+1. Introduction
+2. Installation
+3. The Mongo Shell
+4. Getting Started
+    - Opening the Mongo Shell
+5. Show Databases
+6. Import Data
+7. Select Imported Database
+8. Show Collections
+9. Sample Documents
+10. Get Record Counts
+11. Get List of Distinct Fields
+12. Get Number of Distinct Values Per Field
+13. CRUD Operations
     - Remove and Create
     - Read
     - Update
-8. Indexes
+14. Indexes
     - View Indexes
     - Create Indexes
 
 
+
+
+# Introduction
 
 Unstructured databases have greatly increased in popularity over the past 15 years, addressing the need to manage increasingly large, diverse, and evolving datasets. The lack of adherence to a rigid schema allows data to be stored in variable formats, rather than pre-specified columns, and this flexibility is well-suited toward modern data sources such as multimedia with metadata, text, and embedded or hierarchical data. Normalization and joins are avoided, lending toward the ability to horizontally scale compute resources, and this is heavily relied upon by organizations who deal with massive amounts of web transactions.
 
 MongoDB is the most popular of the unstructured databases, with a large developer community, integration with a multitude of APIs, and a cloud service called MongoDB Atlas. The native language for command-line instructions is Javascript, however the Mongo shell provides its own simplified language. The 'documents', a term analogous to a record in a structured database, are in a JSON-like format, and are organized into 'collections', the analog to a table.
 
 In this article, we will focus on making commands through the Mongo shell, which is the simplest method. However, parallel notebooks utilizing the command line (Bash) and Python (PyMongo) are linked to below.
-- **link1** (the mongo shell workbook)
-- **link2**
-- **link3**
+- <a href="">Mongo Shell Notebook - Coming Soon</a>
+- <a href="">Bash Shell Notebook - Coming Soon</a>
+- <a href="">PyMongo Workbook - Coming Soon</a>
 
 Subsequent articles will focus on PyMongo. The content of this article will provide an overview of querying and database operations, the second article will focus on aggregation pipelines, and the third will focus on deploying machine learning upon streaming text data.
 
@@ -206,7 +199,7 @@ With the <code>.bat</code> file created, simply call upon it from the command li
 We see that the data file contains 6.1M records, and the metadata file contains only one record. The first step toward viewing the details is to select a database. First, we use <code>show dbs</code> to confirm that our imported data exists.
 
 
-# Select Imported DB
+# Select Imported Database
 
 ```js
 show dbs
@@ -458,13 +451,6 @@ load("C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js")
 //   'user.UserID'
 // ]
 ```
-
-
-
-
-**dynamic recursive method**
-
-
 
 
 
@@ -1212,6 +1198,11 @@ db.clicks.updateMany(
 
 ## View Indexes
 
+
+Indexes are structures that improve the speed and efficiency of queries by creating a sorted mapping from the indexed fields to the location of documents. This allows a query to utilize information about which documents may be ignored, resulting in the search for applicable records not to require a scan of every document in the database. The <code>!mongorestore</code> command does automatically associate indexes listed in the metadata (<code>.json</code> file) with the data (the <code>.bson</code>) file.
+
+To check which indexes exist, we can use the following.
+
 ```js
 db.clicks.getIndexes();
 ```
@@ -1222,7 +1213,8 @@ db.clicks.getIndexes();
 [ { v: 2, key: { _id: 1 }, name: '_id_' } ]
 ```
 
-<p></p>
+<p>We see it only relates to the <code>_id</code> field, which will always be an index, by default.
+
 
 ```js
 db.clicks.metadata.findOne();
@@ -1236,11 +1228,14 @@ db.clicks.metadata.findOne();
 //   indexes: [ { v: 2, key: { _id: 1 }, name: '_id_' } ],
 //   uuid: 'ee6da5fe5bdf42b2bc3cecee40723af6',
 //   collectionName: 'clicks'
-}
 ```
 
 
 ## Create Indexes
+
+To create indexes, we can do the following. This may come in handy toward the actions taken in the next article, which will involve generating insights from the data, partly based on user device information such as their operating system and browser.
+
+We'll create an index for <code>device.OS</code>.
 
 ```js
 db.clicks.createIndex({ "device.OS": 1 });
@@ -1252,7 +1247,8 @@ db.clicks.createIndex({ "device.OS": 1 });
 // device.OS_1
 ```
 
-<p></p>
+
+And then <code>device.Browser</code>
 
 ```js
 db.clicks.createIndex({ "device.Browser": 1 });
@@ -1266,13 +1262,7 @@ db.clicks.createIndex({ "device.Browser": 1 });
 
 
 
-
-
-
-
-
-
-
+That's it for the basics. Now we can focus on demonstrating the power of unstructured data, through aggregation pipelines for business insights, and machine learning (topic modeling) upon text data using Latent Dirichlet Analysis. Keep in mind, too, that we have not touched upon horizontal scaling, but it is certainly the case that one advantage MongoDB has over structured databases is that we can deal with read and write operations at massive scale (e.g., if the clickstream data was from Amazon). See you at the next article.
 
 
 
