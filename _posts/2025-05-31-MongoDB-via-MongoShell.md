@@ -9,7 +9,7 @@ categories: MongoDB Bash Python
 This is the first of 3 articles on MongoDB and the power of unstructured databases. The focus is on the Mongo shell, though parallel resources linked to within utilize command-line (Bash) and Python (PyMongo) commands.
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/refs/heads/main/_posts/images/1-1.png" style="height: 500px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/refs/heads/main/_posts/images/1-1.png" style="height: 400px; width:auto;">
 
 
 
@@ -20,7 +20,6 @@ This is the first of 3 articles on MongoDB and the power of unstructured databas
 2. Installation
 3. The Mongo Shell
 4. Getting Started
-    - Opening the Mongo Shell
 5. Show Databases
 6. Import Data
 7. Select Imported Database
@@ -36,7 +35,7 @@ This is the first of 3 articles on MongoDB and the power of unstructured databas
 14. Indexes
     - View Indexes
     - Create Indexes
-
+15. What's Next?
 
 
 
@@ -82,7 +81,7 @@ Multi-line commands can be entered by pressing Enter to move to the next line, a
 
 # Getting Started
 
-## Opening the MongoDB Shell (mongosh)
+### Opening the MongoDB Shell (mongosh)
 
 ### From the Command Line
 
@@ -94,7 +93,7 @@ mongosh
 This will default to the localhost server. We can specify an alternative upon opening by using the command:
 
 ```bash
-mongosh --host \<hostname\> --port \<port\>
+mongosh --host <hostname> --port <port>
 ```
 
 
@@ -1266,6 +1265,7 @@ db.clicks.createIndex({ "device.Browser": 1 });
 ```
 
 
+# What's Next?
 
 That's it for the basics. Now we can focus on demonstrating the power of unstructured data, through aggregation pipelines for business insights, and machine learning (topic modeling) upon text data using Latent Dirichlet Analysis. Keep in mind, too, that we have not touched upon horizontal scaling, but it is certainly the case that one advantage MongoDB has over structured databases is that we can deal with read and write operations at massive scale (e.g., if the clickstream data was from Amazon). See you at the next article.
 
@@ -1274,6 +1274,15 @@ That's it for the basics. Now we can focus on demonstrating the power of unstruc
 
 
 
+
+
+
+
+# References
+
+Mongo DB User Docs
+ 
+<a href="https://www.mongodb.com/docs/">https://www.mongodb.com/docs/</a>
 
 
 
