@@ -45,24 +45,22 @@ This is the first of 3 articles on MongoDB and the power of unstructured databas
 
 
 
-Unstructured databases have greatly increased in popularity over the past 15 years, addressing the need to manage increasingly large, diverse, and evolving data. The lack of adherence to a rigide schema allows data to be stored in variable formats, rather than pre-specified columns, and this flexibility is well-suited toward modern data sources such as multimedia with metadata, text data, and embedded or hierarchical data. Normalization and joins are avoided, lending toward the ability to horizontally scale compute resources, and this is heavily relied upon by organizations who deal with massive amounts of web transactions and traffic.
+Unstructured databases have greatly increased in popularity over the past 15 years, addressing the need to manage increasingly large, diverse, and evolving datasets. The lack of adherence to a rigid schema allows data to be stored in variable formats, rather than pre-specified columns, and this flexibility is well-suited toward modern data sources such as multimedia with metadata, text, and embedded or hierarchical data. Normalization and joins are avoided, lending toward the ability to horizontally scale compute resources, and this is heavily relied upon by organizations who deal with massive amounts of web transactions.
 
-MongoDB is the most popular of the unstructured databases, with a large developer community, integration with a multitude of programming languages, and cloud service called MongoDB Atlas. The native language for command-line instructions is Javascript, however the Mongo shell provides its own simplified language. The 'documents' - analogous to records in a structured database - are in a JSON-like format, and are organized into 'collections', the unstructured analog to a structured database table.
+MongoDB is the most popular of the unstructured databases, with a large developer community, integration with a multitude of APIs, and a cloud service called MongoDB Atlas. The native language for command-line instructions is Javascript, however the Mongo shell provides its own simplified language. The 'documents', a term analogous to a record in a structured database, are in a JSON-like format, and are organized into 'collections', the analog to a table.
 
-In this article, we will focus on making commands through the Mongo shell, which is the simplest method. However, parallel notebooks utilizing Python (PyMongo) and command line (Bash) are provided, in the locations listed below.
-
+In this article, we will focus on making commands through the Mongo shell, which is the simplest method. However, parallel notebooks utilizing the command line (Bash) and Python (PyMongo) are linked to below.
 - **link1** (the mongo shell workbook)
 - **link2**
 - **link3**
 
-In subsequent articles, we will simplify the structure by focusing on PyMongo. The content of this article will provide an overview, the second article will focus on aggregation pipelines, and the third article on deploying machine learning on streaming text data.
-
+Subsequent articles will focus on PyMongo. The content of this article will provide an overview of querying and database operations, the second article will focus on aggregation pipelines, and the third will focus on deploying machine learning upon streaming text data.
 
 
 
 # Installation -> (link to instructions)
 
-The MongoDB website has robust tutorials for installation. Be sure to get the Mongo shell and add it to PATH so you can follow along with the below. Although the code is provided in a notebook-format, the commands in this article will only work through the Mongo shell (opened directly or through <code>mongosh</code> from the command line). The code in the parallel notebooks linked to above will.
+The MongoDB website has robust tutorials for installation. Be sure to get the Mongo shell and add it to PATH so you can follow along with the below. Although the code is provided in a notebook format, the commands in this article and the first 'notebook' will only work through the Mongo shell. This can be opened directly (by clicking on the .exe file), or from the command prompt using <code>mongosh</code>.
 
 - <a href="https://www.mongodb.com/docs/manual/installation/">MongoDB Installation Tutorials</a>
 
@@ -78,9 +76,9 @@ For PyMongo, if you are using Anaconda, I recommend using <code>conda install py
 
 # The Mongo Shell
 
-The capabilities of the Mongo shell include performing CRUD (create, read, update, delete) operations, querying and index management, user and database administration, aggregation pipelines, and Javascript support. The commands are generally simpler and less verbose than using the APIs, however it is not optimized for large-scale data processing, whereas the APIs like PyMongo are more capable for this purpose.
+The capabilities of the Mongo shell include performing CRUD (create, read, update, delete) operations, querying and index management, user and database administration, and Javascript support. The commands are simpler and less verbose than calling upon MongoDB through the APIs, however the Mongo shell is not optimized for large-scale data processing, so APIs like PyMongo will perform better in this regard.
 
-Multi-line commands can be entered by pressing Enter to move to the next line, and then ctrl+Enter when ready to execute. This can be cumbersome for complex commands, though you can use <code>load()</code> to execute the contents of a Javascript file.
+Multi-line commands can be entered by pressing Enter to move to the next line, and then ctrl+Enter when ready to execute. This can be cumbersome for complex commands, though you can use <code>load()</code> to execute from a Javascript file.
 
 
 
@@ -88,27 +86,29 @@ Multi-line commands can be entered by pressing Enter to move to the next line, a
 
 ## Opening the MongoDB Shell (mongosh)
 
-#### From the Command Line
+### From the Command Line
 
 Once installed, we can open the Mongo shell simply by typing <code>mongosh</code> (or the appropriate environment variable name) into the command prompt. 
 
-```cmd
+```bash
 mongosh
 ```
 This will default to the localhost server. We can specify an alternative upon opening by using the command:
 
-```cmd
+```bash
 mongosh --host <hostname> --port <port>
 ```
 
 
-#### Opening Directly
+### Opening Directly
 
-In Windows, you could also open the Mongo shell by clicking on the application within file explorer or typing it into the search bar. When doing this, it will prompt for a server, and suggest localhost as a default.
+If opening the Mongo shell by clicking on the .exe. file, it will prompt for a server, suggesting <code>localhost</code> by default.
 
-<code>Please enter a MongoDB connection string (Default: mongodb://localhost/):</code>
+```bash
+# Please enter a MongoDB connection string (Default: mongodb://localhost/):</code>
+```
 
-I will go with localhost. We can type in the string it suggested, or simply press Enter.
+I will go with <code>localhost</code>. We can type in the string it suggested, or simply press Enter.
 
 ```js
 mongodb://localhost/
