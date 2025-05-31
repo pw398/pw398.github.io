@@ -58,7 +58,7 @@ Subsequent articles will focus on PyMongo. The content of this article will prov
 
 
 
-# Installation -> (link to instructions)
+# Installation
 
 The MongoDB website has robust tutorials for installation. Be sure to get the Mongo shell and add it to PATH so you can follow along with the below. Although the code is provided in a notebook format, the commands in this article and the first 'notebook' will only work through the Mongo shell. This can be opened directly (by clicking on the .exe file), or from the command prompt using <code>mongosh</code>.
 
@@ -135,7 +135,7 @@ show dbs
 
 # Import Data 
 
-We will be importing clickstream data from a <code>.bson</code> file with the data records, along with a <code>.json</code> file with a single record of metadata.
+We will be importing clickstream data from a <code>.bson</code> file with the data records, along with a <code>.json</code> file with a single record of metadata. It corresponds to the web traffic of an e-commerce store called Kirana Store, an indicates with the <code>Activity</code> field whether a pageload or click on a product occured.
 
 Our import commands below will specify <code>--drop</code> to drop the database first if it currently exists, but if at any point you wish to drop a database (in this case named <code>clickstream</code>, you can use the command <code>use clickstream</code> to select it, followed by <code>db.dropDatabase()</code>.
 
@@ -328,11 +328,6 @@ db.clicks.metadata.countDocuments()
 The below command is a little more involved. To get the list of distinct fields in the collection, we want to loop through each of the documents. Javascript is the native language of the Mongo shell, so if we want to create variables and loops, we must either enter Javascript commands, or use the <code>load()</code> function upon a <code>.js</code> file (or an API like PyMongo). As mentioned above, the shell is not optimized for large-scale processing, so PyMongo would actually be faster at executing the below operation (which is why it will be the focus of the second and third article).
 
 
-**why is pymongo faster?**
-
-To run a multi-line command like the following, using the Mongo shell, we can enter each line one at a time and press Enter, and then finally press ctrl+Enter when ready to execute the accumulation of lines. Alternatively, as you will see momentarily, we could put the Javascript into a .js file, and use <code>load(\<file\>)</code> with the Mongo shell to execute.
-
-
 ```js
 (function() {
   var fields = {};
@@ -359,10 +354,9 @@ To run a multi-line command like the following, using the Mongo shell, we can en
 // ]
 ````
 
+That provided a list of top-level fields, but not nested fields that reside in a hierarchy. The following script will loop through second-level fields as well. It is quite lengthy to be entered line by line, so we'll use a <code>.js</code> file along with the <code>load()</code> command.
 
-Great - but working with unstructured data means we could have second-level fields nested within the above. The following script will pull us a unique list include nested fields. It's too lengthy to enter into the shell one line at a time, so we'll save the Javascript to a .js file. 
-
-Though we do not need to create the .js file using the method below, it is convenient to define a Python function which will take in some plain text, clean it if necessary, and output a .js file with the specified directory and filename.
+I said this article would be all about Mongo shell commands, but for my own sake, I will use the below Python function to generate the <code>.js</code> files and ensure the proper format. This is simply for the sake of convenience, it is purely optional.
 
 
 ```js
@@ -393,7 +387,9 @@ def save_js_commands(js_input, js_folder, js_filename):
         return None
 ```
 
-This next piece of Python code specifies the Javascript as text, and calls upon the above function to create the .js file.
+
+Below specifies the Javascript as text, and calls upon the above function to create the <code>.js</code> file.
+
 
 ```python
 # unique_fields_nested.js
@@ -438,7 +434,7 @@ exe_file = f"{js_folder}\\{js_filename}.js"
 # ✅ JavaScript code saved successfully to: C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js
 ```
 
-The below is what we type into the Mongo shell to execute the .js script. Replace my directory with the directory pertaining to yourself.
+The below is what we type into the Mongo shell to execute the <code>.js</code> script. Replace my directory with the directory pertaining to yourself.
 
 ```js
 load("C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js")
@@ -467,7 +463,7 @@ load("C:/Users/patwh/Downloads/js_commands/unique_fields_nested.js")
 
 # Get Number of Distinct Values by Field
 
-It would be informative to know how many distinct values correspond to each of the fields in the collection. 
+It would be informative to see how many distinct values correspond to each of the fields in the collection. For that, we can use the following.
 
 ```python
 js_code = """
@@ -539,14 +535,14 @@ load("C:/Users/patwh/Downloads/js_commands/unique_value_counts_hardcoded_fields.
 // user.UserID: 34051 unique values
 ```
 
-We see some fields we didn't see with the sample document, such as <code>user.UserID</code>.These correspond to users of the Kirana store dataset who have signed up to create an account. 
+We see some fields we didn't see in the sample document, such as <code>user.UserID</code>.These correspond to users of the Kirana store dataset who have signed up to create an account. 
 
 
 
 ### Dynamic Version (First Finds Fields, then Distinct Value Counts)
 
 
-Finding the unique list of fields and then hard-coding them into the search for distinct values may have saved us some time - or at least, it broke a very long task (given the 6.1M documents) into two shorter tasks. But the code to perform both actions in dynamic fashion, without hard-coding, is provided below.
+Finding the unique list of fields and then hard-coding them into the search for distinct values broke a very long task (given the 6.1M documents) into two shorter tasks. But the code to perform both actions in dynamic fashion, without hard-coding, is provided below.
 
 ```python
 js_code = """
@@ -647,24 +643,24 @@ load("C:/Users/patwh/Downloads/js_commands/count_unique_values_dynamic.js")
 
 # CRUD Operations
 
-Fundamental database operations include creating new records, removing records, updating records, and deleting records - hence the acronym CRUD. The below will demonstrate some examples of each.
+Fundamental database operations include creating new records, removing records, updating records, and deleting records - hence the acronym CRUD. The below will demonstrate examples of each.
 
 
 ## Remove and Create
 
-The task below will be to remove a record, or multiple records, capture the data in a Javascript variable, and then perform an insertion operation to put them back into the collection.
+To demonstrate the actions of removing a record, creating a record, and saving a record to a Javascript variable, we will capture the last record's data in a variable, remove that record, and then re-insert it from the variable.
 
 
 ### Remove and Re-Insert the Last Record
 
-To capture the data of the <code>clicks</code>-collection record that we will momentarily delete, we use the <code>find()</code> operation combined with a <code>sort</code>:
+To capture the data of the <code>clicks</code> record that we will momentarily delete, we use the <code>find()</code> operation combined with <code>sort</code> and <code>limit</code>.
 
 ```js
 // capture data in a javascript variable
 var lastDoc = db.clicks.find().sort({ _id: -1 }).limit(1).next();
 ````
 
-And the data is then presented in JSON format.
+The data is represented in JSON format.
 
 ```js
 // {
@@ -691,7 +687,7 @@ db.clicks.deleteOne({ _id: lastDoc._id });
 // { acknowledged: true, deletedCount: 1 }
 ````
 
-Finally, we use <code>insertOne()</code> with reference to our stored variable to re-insert the record. If the data were not in JSON format, we would need to transform it to such.
+Finally, we use <code>insertOne()</code> with reference to our stored variable in order to re-insert the record. If the data were not in JSON format, we would need to transform it first.
 
 ```js
 // insert the record back into the collection
@@ -709,7 +705,9 @@ db.clicks.insertOne(lastDoc)
 
 ### Remove and Re-Insert the Last 5 Records
 
-Below, same drill as above, but for multiple records at the same time. We capture the data of the last 5 records:
+Similarly, we can do the same as above with a batch of records. Below, I will use the last 5.
+
+We capture the data in a variable:
 
 ```js
 // capture data in a javascript variable
@@ -730,7 +728,7 @@ db.clicks.deleteMany({ _id: { $in: idsToDelete } });
 // { acknowledged: true, deletedCount: 5 }
 ```
 
-And finally, use <code>insertMany()</code> to insert them back in, all at the same time.
+And finally, use <code>insertMany()</code> to insert them all back in at the same time.
 
 ```js
 // insert them back in
@@ -756,7 +754,7 @@ db.clicks.insertMany(lastDocs);
 
 ## Read
 
-We've done a healthy amount of 'read' operations already, but the below will provide some more examples of how to query for the data you are looking for. First, we'll filter to a particular field, in this case the record ID. No documents have duplicate IDs, so the below <code>findOne()</code> will either return one document or none.
+<p>We've already executed a fair amount of queries, but the below will elaborate. First, we'll filter to a particular field, in this case the <code>_id</code>. No documents have duplicate IDs, so the below <code>findOne()</code> will return either one document or none.</p>
 
 
 <h3>Filter to <code>_id</code> Equal to <code>60df129dad74d9467ceebd51</code></h3>
@@ -780,9 +778,11 @@ db.clicks.findOne({ _id: ObjectId("60df129dad74d9467ceebd51") });
 ````
 
 
+
 ### Find First Record Where <code>device.Browser</code> is not Firefox
 
-<p>If multiple records meet the specified criteria of a <code>findOne()</code> query, the first record encountered will be returned. Below, we simply replace the above criteria of having a particular <code>_id</code> code with having a browser of Firefox.</p>
+<p>If multiple records meet the specified criteria of a <code>findOne()</code> query, the first record encountered will be returned. Below, we simply replace the above criteria of having a particular <code>_id</code> with the criteria of having Firefox browser.</p>
+
 
 ```js
 db.clicks.findOne({ "device.Browser": "Firefox" });
@@ -805,7 +805,7 @@ db.clicks.findOne({ "device.Browser": "Firefox" });
 
 ### Find First 2 Records Where <code>device.Browser</code> is not Firefox
 
-If wanting to return more than one document, we use <code>find()</code> rather than <code>findOne()</code>. We can use <code>limit</code> as done below in order to truncate the data returned to a certain number of records - in this case, the first two records where the browser is not equal to Firefox, using the <code>$ne</code> (not equal) operator.
+If wanting to return more than one document, we use <code>find()</code> rather than <code>findOne()</code>. As we did above, we use <code>limit</code> to truncate the data returned to a certain number of records - in this case, the first two records where the browser is not equal to <code>Firefox</code>, using the <code>$ne</code> (not equal) operator.
 
 ```js
 db.clicks.find({ "device.Browser": { $ne: "Firefox" } }).limit(2);
@@ -840,7 +840,9 @@ db.clicks.find({ "device.Browser": { $ne: "Firefox" } }).limit(2);
 
 ### Find First 2 Records Where <code>device.Browser</code> and <code>VisitDateTime</code> > 5/20/2018
 
-Of course, we also have comparison operators such as <code>$gt</code>, used below to get the first two records which have a date later than May 20.
+
+Of course, we also have comparison operators such as <code>$gt</code>, used below to get two records (using <code>limit</code> which have a date later than May 20.
+
 
 ```js
 db.clicks.find({
@@ -877,6 +879,7 @@ db.clicks.find({
 
 ### Get the Minimum and Maximum <code>VisitDateTime</code>
 
+
 To get the minimum and maximum values of a field that spans a numerical or date-based range, we can use something like the following. Aggregation will be covered further in the following articles.
 
 
@@ -906,7 +909,9 @@ db.clicks.aggregate([
 
 ### Get Count of Records Where <code>VisitDateTime</code> is Greater Than 5/20/2018
 
-We can use <code>countDocuments()</code> as we did to get the count of records in a collection, but apply a filter such as the one we used just above. Below, we see that about 2.45M records have a date greater than May 20.
+
+Above, we used <code>countDocuments()</code> to get the count of records in a collection. Below, we apply a filter such as the one we used just above, and find that about 2.45M records have a date greater than May 20.
+
 
 ```js
 db.clicks.countDocuments({
@@ -922,8 +927,6 @@ db.clicks.countDocuments({
 
 
 ### Get Count of Records Where <code>user.Country</code> is <code>India</code> or <code>United States</code>
-
-
 
 
 #### Using <code>$or</code>
