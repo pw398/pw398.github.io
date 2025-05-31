@@ -96,7 +96,7 @@ mongosh
 This will default to the localhost server. We can specify an alternative upon opening by using the command:
 
 ```bash
-mongosh --host <hostname> --port <port>
+mongosh --host \<hostname\> --port \<port\>
 ```
 
 
@@ -117,7 +117,7 @@ mongodb://localhost/
 
 # Show Databases
 
-We can use <code>show dbs</code> or <code>show databases</code> to get the list of currently existing databases. The three listed below are system-related databases which came with the installation.
+We can use <code>show dbs</code> or <code>show databases</code> to get the list of existing databases. The three listed below are system-related, and come with the installation.
 
 ```js
 show dbs
@@ -135,12 +135,9 @@ show dbs
 
 # Import Data 
 
+We will be importing clickstream data from a <code>.bson</code> file with the data records, along with a <code>.json</code> file with a single record of metadata.
 
-
-
-We will be importing clickstream data from a .bson file with the data records, along with a .json file with a single record of metadata.
-
-You may be interested in how to drop this clickstream database, or another that is currently in existence. For that, we simply select the database using <code>use clickstream</code>, and then apply the command <code>db.dropDatabase()</code>.
+Our import commands below will specify <code>--drop</code> to drop the database first if it currently exists, but if at any point you wish to drop a database, it can be done (for a database called <code>clickstream</code>, by using the command <code>use clickstream</code>, followed by <code>db.dropDatabase()</code>.
 
 
 ### Drop clickstream if Exists (Optional)
