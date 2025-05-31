@@ -273,9 +273,9 @@ db.clicks.findOne()
 // }
 ```
 
-<p>The <code>_id</code>code> field is a unique identifier attached to each record. Duplicate IDs are not permitted, and nor is deleting the field.
+<p>The <code>_id</code> field is a unique identifier attached to each record. Duplicate IDs are not permitted, nor is deleting this field.</p>
 
-We'll take a look at the lone record in the <code>clicks.metadata</code> collection as well.
+We'll take a look at the lone record in the <code>clicks.metadata</code> collection.
 
 ```js
 db.clicks.metadata.findOne()
@@ -298,7 +298,7 @@ We see that this contains some index information. Indexing will be covered in mo
 
 # Get Record Counts
 
-We already noticed the number of records in this database upon import, but if we didn't, you would use something like this to assess the count of documents.
+If we weren't familiar with the number of records in this database upon import, we could run the following to get the count of documents.
 
 ```js
 db.clicks.countDocuments()
@@ -325,7 +325,7 @@ db.clicks.metadata.countDocuments()
 
 # Get List of Distinct Fields
 
-Below, we'll use a command that is a little more involved than our prior commands. I would like to loop through the documents and determine the list of distinct fields contained by documents in the collection. Javascript is the native language of the Mongo shell, so if we want to create variables and loops, we must either rely on Javascript entered directly into the shell, .js files, or an API like PyMongo. PyMongo would actually execute the below in quicker fashion than the Mongo shell, which is why I'll limit the search to the first 1M records (and focus on PyMongo in the upcoming articles).
+The below command is a little more involved. To get the list of distinct fields in the collection, we want to loop through each of the documents. Javascript is the native language of the Mongo shell, so if we want to create variables and loops, we must either enter Javascript commands, or use the <code>load()</code> function upon a <code>.js</code> file (or an API like PyMongo). As mentioned above, the shell is not optimized for large-scale processing, so PyMongo would actually be faster at executing the below operation (which is why it will be the focus of the second and third article).
 
 
 **why is pymongo faster?**
