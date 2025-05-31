@@ -104,13 +104,13 @@ mongosh --host \<hostname\> --port \<port\>
 
 If opening the Mongo shell by clicking on the .exe. file, it will prompt for a server, suggesting <code>localhost</code> by default.
 
-```bash
-# Please enter a MongoDB connection string (Default: mongodb://localhost/):</code>
+```js
+// Please enter a MongoDB connection string (Default: mongodb://localhost/):</code>
 ```
 
 I will go with <code>localhost</code>. We can type in the string it suggested, or simply press Enter.
 
-```js
+```bash
 mongodb://localhost/
 ```
 
@@ -137,7 +137,7 @@ show dbs
 
 We will be importing clickstream data from a <code>.bson</code> file with the data records, along with a <code>.json</code> file with a single record of metadata.
 
-Our import commands below will specify <code>--drop</code> to drop the database first if it currently exists, but if at any point you wish to drop a database, it can be done (for a database called <code>clickstream</code>, by using the command <code>use clickstream</code>, followed by <code>db.dropDatabase()</code>.
+Our import commands below will specify <code>--drop</code> to drop the database first if it currently exists, but if at any point you wish to drop a database (in this case named <code>clickstream</code>, you can use the command <code>use clickstream</code> to select it, followed by <code>db.dropDatabase()</code>.
 
 
 ### Drop clickstream if Exists (Optional)
@@ -169,7 +169,7 @@ We will also use the <code>--drop</code> option in our import commands, which wi
 The syntax for these commands is evident from the last two lines below. You could use hard-coding and ignore all of the variable-setting done by the preceding lines. The below creates a .bat file which can be run from the command line to import our .bson data file (using <code>mongorestore</code>, and .json metadata (using <code>mongoimport</code>).
 
 
-```bat
+```bash
 # import_data.bat:
 SET HOST=localhost
 SET PORT=27017
@@ -186,15 +186,15 @@ mongorestore --host %HOST%:%PORT% --db %DBNAME% --collection %COLLECTION_BSON% -
 mongoimport --host %HOST%:%PORT% --db %DBNAME% --collection %COLLECTION_JSON% --drop --type json "%JSON_FILE%"
 ```
 
-With the .bat file created, simply call upon it from the command line, replacing my directory below with your own.
+With the <code>.bat</code> file created, simply call upon it from the command line, replacing my directory below with your own.
 
-```python
+```bash
 !"C:/Users/patwh/Downloads/import_data.bat"
 ```
 
 <p></p>
 
-```python 
+```bash 
 # 2025-05-28T18:38:13.827-0600  finished restoring clickstream.clicks (6100000 documents, 0 failures)
 # 2025-05-28T18:38:13.827-0600  no indexes to restore for collection clickstream.clicks
 # 2025-05-28T18:38:13.827-0600  6100000 document(s) restored successfully. 0 document(s) failed to restore.
@@ -203,7 +203,7 @@ With the .bat file created, simply call upon it from the command line, replacing
 # 2025-05-28T18:38:14.507-0600  1 document(s) imported successfully. 0 document(s) failed to import.
 ```
 
-We see that the data file contains 6.1M records, and the metadata file contains only one record. The first step toward viewing the details is to select a database. First, we use <code>show dbs</code> to confirm that our imported data exists, under the name <code>clickstream</code>.
+We see that the data file contains 6.1M records, and the metadata file contains only one record. The first step toward viewing the details is to select a database. First, we use <code>show dbs</code> to confirm that our imported data exists.
 
 
 # Select Imported DB
@@ -236,10 +236,7 @@ use clickstream
 
 # Show Collections
 
-Rather than SQL, where we refer to a database as containing tables of fields and records, we say that a MongoDB database contains 'collections' of documents, each of which has a set of fields. Due to the unstructured nature of the data, it is less common to have collections that require joins to others, as you would typically see with SQL.
-
-Below, we list the collections belonging to <code>clickstream</code>.
-
+As mentioned above, a MongoDB database contains 'collections' of documents, i.e., records, each of which has a set of fields that may or may not exist for other documents in particular. We list the collections belonging to <code>clickstream</code> as follows.
 
 ```js
 show collections
@@ -256,7 +253,7 @@ show collections
 
 # Sample Documents
 
-To view the first document found in a collection, we use <code>db.collection.findOne()</code>. Note that the fields we see in this sample are not necessarily representative of the fields contained by other records in the collection. 
+To view the first document found in a collection, we use <code>db.collection.findOne()</code>. As you will see shortly, we can pass arguments into this function in order to filter.
 
 ```js
 db.clicks.findOne()
