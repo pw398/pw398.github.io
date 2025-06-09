@@ -9,7 +9,7 @@ categories: MongoDB Python
 In this second MongoDB article, we continue with the Kirana Store clickstream data, and use aggregation pipelines to derive business insights, and make some beautiful and interactive charts via Plotly. 
 
 
-<img src="https://github.com/pw598/pw598.github.io/blob/main/_posts/images/mg2.jpg?raw=true" style="height: 350px; width:auto;">
+<img src="https://github.com/pw398/pw398.github.io/blob/main/_posts/images/mg2.jpg?raw=true" style="height: 350px; width:auto;">
 
 
 # Outline
