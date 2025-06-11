@@ -9,7 +9,7 @@ categories: MongoDB Python
 In this second MongoDB article, we continue with the Kirana Store clickstream data, and use aggregation pipelines to derive business insights, and make some beautiful and interactive charts via Plotly. 
 
 
-<img src="https://github.com/pw398/pw398.github.io/blob/main/_posts/images/mg2.jpg?raw=true" style="height: 350px; width:auto;">
+<img src="https://github.com/pw398/pw398.github.io/blob/main/_posts/images/mg2.png?raw=true" style="height: 350px; width:auto;">
 
 
 # Outline
@@ -43,6 +43,9 @@ The dataset is available in a .zip file <a href="https://drive.google.com/file/d
 # Import Libraries and Data
 
 
+<details>
+<summary>Show Python Code</summary>
+
 ```python
 from pymongo import MongoClient
 from pymongo import ASCENDING, DESCENDING
@@ -54,6 +57,9 @@ import subprocess
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 ```
+</details>
+
+
 
 
 ## Connect to Server
@@ -346,7 +352,7 @@ print(f"Exported to {export_folder}")
 <p></p>
 
 ```python
-Exported to data\checkpoint
+# Exported to data\checkpoint
 ```
 
 
