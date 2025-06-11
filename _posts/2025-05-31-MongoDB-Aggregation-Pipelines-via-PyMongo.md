@@ -43,10 +43,7 @@ The dataset is available in a .zip file <a href="https://drive.google.com/file/d
 # Import Libraries and Data
 
 
-<details open>
-<summary>Show Python code</summary>
-
-<pre class="tex2jax_ignore"><code class="language-python">
+```python
 from pymongo import MongoClient
 from pymongo import ASCENDING, DESCENDING
 from pymongo import UpdateOne
@@ -56,12 +53,7 @@ import time
 import subprocess
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-</code></pre>
-
-</details>
-
-
-
+```
 
 
 ## Connect to Server
