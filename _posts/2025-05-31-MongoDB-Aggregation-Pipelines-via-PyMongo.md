@@ -43,8 +43,9 @@ The dataset is available in a .zip file <a href="https://drive.google.com/file/d
 # Import Libraries and Data
 
 
+{% raw %}
 <details open>
-<summary>Show Python Code</summary>
+<summary>Show Python code</summary>
 
 ```python
 from pymongo import MongoClient
@@ -57,7 +58,7 @@ import subprocess
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 ```
-</details>
+</details> {% endraw %} 
 
 
 
