@@ -43,7 +43,7 @@ The dataset is available in a .zip file <a href="https://drive.google.com/file/d
 # Import Libraries and Data
 
 
-<details>
+<details open>
 <summary>Show Python Code</summary>
 
 ```python
