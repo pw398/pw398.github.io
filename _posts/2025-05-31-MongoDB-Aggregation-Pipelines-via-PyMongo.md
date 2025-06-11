@@ -46,7 +46,7 @@ The dataset is available in a .zip file <a href="https://drive.google.com/file/d
 <details open>
 <summary>Show Python code</summary>
 
-<pre><code class="language-python">
+<pre class="tex2jax_ignore"><code class="language-python">
 from pymongo import MongoClient
 from pymongo import ASCENDING, DESCENDING
 from pymongo import UpdateOne
