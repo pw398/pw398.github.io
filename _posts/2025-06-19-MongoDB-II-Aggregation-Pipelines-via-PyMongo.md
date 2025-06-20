@@ -22,7 +22,7 @@ In this article, we'll continue to work with the Kirana Store clickstream data. 
 
 To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll focus on PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
 
-To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in retrospect the issues are much clearer). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results were more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging with input, and modularizing code into attachments were productive strategies, but the limitations were still quite noticeable, for now.
+To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in retrospect the issues are much clearer). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results were more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging with input, and modularizing code into attachments were productive strategies, but limitations were (for now) still noticeable.
 
 
 
@@ -260,7 +260,7 @@ for doc in result:
 ## Count of Unique <code>webClientID</code> Values
 
 
-<code>webClientID</code> groups individual visits by user, so long as they connect using the same device and system as prior visits. As we'll see later, the data also include a <code>user.UserID</code> field for those who have created (and logged into) an account, however a minority of documents contain that information, whereas all records contain a <code>webClientID</code>. This introduces the <code>$count</code> operator.
+<code>webClientID</code> groups individual visits by user, so long as they connect using the same device and system as prior visits. As we'll see later, the data also include a <code>user.UserID</code> field for those who have created (and logged into) an account, however a minority of documents contain that information, whereas all documents contain a <code>webClientID</code>. This introduces the <code>$count</code> operator.
 
 
 ```python
@@ -298,18 +298,13 @@ FROM clicks;
 ## Count of <code>webClientID</code> Values with a <code>user.UserID</code>
 
 
-Next, we'll see how many instances of <code>webClientID</code> correspond to having a <code>user.UserID</code>. This introduces the <code>$match</code> operator, which lets us filter to only records where the field <code>user.UserID</code> exists, and is not equal (<code>$ne</code>) to being <code>None</code> (i.e., not null).
+Next, we'll see how many instances of <code>webClientID</code> correspond to having a <code>user.UserID</code>. This introduces the <code>$match</code> operator, which lets us filter to only records where the field <code>user.UserID</code> exists, and is not equal (<code>$ne</code>) to being <code>None</code> (null).
 
 
 ```python
 result = collection.distinct(
     "webClientID",
-    {
-        "user.UserID": {
-            "$exists": True,
-            "$ne": None
-        }
-    }
+    {"user.UserID": {"$exists": True, "$ne": None}}
 )
 
 len(result)
@@ -356,7 +351,7 @@ print(count)
 # 34050
 ```
 
-The SQL analog would simple be:
+The SQL analog would simply be:
 
 ```sql
 SELECT COUNT(DISTINCT user_UserID)
@@ -370,9 +365,9 @@ FROM clicks;
 ## Distinct Values for <code>device.OS</code>
 
 
-Now for something a little more interesting. Let's suppose we are interested in understanding our customers' device-related preferences. For this, we can utilize the nested <code>device.OS</code> and <code>device.Browser</code> fields. The operating systems are a good indicator of whether a user is on a mobile or desktop device, and the browsers may offer a clear indication of whether a visitor is a robot. I relied on AI to make the classifications, so forgive any technical inaccuracies, but we will use the logic that a visitor is a robot if the browser indicates so, and that this classification will take precedence over distinctions in operating system. If not a robot, we will classify the visitor as either desktop or mobile based on operating system, and label each document accordingly by adding a field called <code>device_type</code> to our collection.
+Now for something a little more interesting. Let's suppose we are interested in understanding our customers' device-related preferences. For this, we can utilize the nested <code>device.OS</code> and <code>device.Browser</code> fields. The operating systems are a good indicator of whether a user is on a mobile or desktop device, and the browsers may offer a clear indication of whether a visitor is a robot. I relied on AI to make the classifications, so forgive any technical inaccuracies, but we will use the logic that a visitor is a robot if the browser indicates so, and that this classification will take precedence over distinctions in operating system. If not a robot, we will classify the visitor as either desktop or mobile based on operating system, and label each document accordingly by adding a field called <code>device_type</code>.
 
-To get the list of unique operating systems, we can use the <code>distinct</code> keyword as follows. The line below simply provides the output as a horizontal list to save space.
+To get the list of unique operating systems, we can use the <code>distinct</code> keyword as follows. The second line simply provides the output as a horizontal list to save space.
 
 ```python
 os_list = collection.distinct("device.OS")
@@ -695,7 +690,7 @@ The MySQL via Bash analog would be soemthing like the following.
 
 # Export Flattened Data to CSV
 
-It's a conceivable use-case that you may want to bring data from an unstructured MongoDB database, such as used in the early stages of analysis in a data lake, into a structured SQL data warehouse with enforcable schema, normalizing entity relationships, etc. Below, we will 'flatten' the data such that nested fields are brought out of their hierarchy and assigned null values in the records for which the nested fields do not exist. The MySQL Colab notebook linked to above, after some library installations and imports, will import this flattened data, and provide query analogies to illuminate our understanding of the increasingly complex MongoDB queries and operations below. This flattening and export operation is performed in Python below.
+It's a very conceivable use-case that we may want to bring data from an unstructured MongoDB database, such as used in the early stages of analysis in a data lake, into a structured SQL data warehouse with enforcable schema, normalizing entity relationships, etc. Below, we will 'flatten' the data such that nested fields are brought out of their hierarchy, and assigned null values in the places where the data do not exist. The MySQL Colab notebook linked to above, after some library installations and imports, will import this flattened data, and provide query analogies to illuminate our understanding of the increasingly complex MongoDB queries and operations below. This flattening and export operation is performed using pandas, after exporting the data as a list from the MongoDB collection.
 
 
 ```python
