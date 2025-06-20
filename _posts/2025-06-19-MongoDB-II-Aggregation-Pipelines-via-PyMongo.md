@@ -786,14 +786,24 @@ len(df)
 
 
 
-# Add a Sparse Index to user.UserID
+# Create <code>users_weekly</code> Table
+
+We can see that a large number of documents (6.1M) have accrued only over a relatively short amount of time (3 weeks). It may be helpful to create a collection with aggregated, and perhaps filtered data to facilitate shorter run-time of queries for analytical purposes. Such analytics would still require some level of date information, but we'll first focus on the user and week level. To help ensure consistency with the country-level insights between our MongoDB and SQL queries, and because some users have operated from multiple countries, I'll break things out at the country level as well. If we wanted to ensure consistent results at the city level as well, we would break things out further, or ensure a consistent method of assigning only a single city per user.
+
+It will help, in terms of speed, to add an index to the <code>user.UserID</code> field. In MongoDB, it will be a sparse index, meaning it only applies to the minority of documents which contain that field. 
+
+
+
+# Create Aggregated <code>users_weekly</code> Collection
+
+## Add a Sparse Index to user.UserID
 
 ```python
 # add a userID index
 db.clicks.create_index([("user.UserID", 1)], sparse=True)
 ```
 
-<p></p>
+The SQL analog:
 
 ```sql
 CREATE INDEX idx_UserID ON clicks (user_UserID(255) ASC);
@@ -801,22 +811,425 @@ SHOW INDEXES FROM clicks WHERE Key_name = 'idx_UserID';
 ```
 
 
+## Create Aggregated Collection
+
+The aggregation pipeline will involve 5 stages, and introduce the usage of many of the pipeline operators mentioned earlier on:
+
+1. Filter to Valid Records (Users)
+- i.e., <code>user.UserID</code> exists
+- Uses <code>$match</code>
+
+2. Add Fields
+- Normalize <code>device_type</code> to lower case
+- Calculate week number, with a start date of Monday
+- Extract date, so that we can include the number of unique days visited
+- Uses <code>$addFields</code>
+
+3. Group by User, Week, and Country
+- Groups clicks and pageloads at the aggregated level 
+- Uses <code>$group</code>
+
+4. Compute Metrics per Device Type
+- Uses <code>$project</code>
+
+5. Write to New Collection 
+- Uses <code>$out</code>
+
+
+Admittedly, it's a lot to take in, so I'll provide plenty of comments in the PyMongo code, and break tradition with the above by providing the SQL analog first.
+
+SQL:
+
+```sql
+%%sql
+
+-- create a table to store weekly aggregated user activity data
+CREATE TABLE users_weekly (
+    userID VARCHAR(255),      -- unique identifier for each user
+    weeknum INT,              -- week number in year (Monday as start of week)
+    numDays INT,              -- distinct active days for user in week
+    City VARCHAR(100),        -- user city
+    Country VARCHAR(100),     -- user country
+    pageloads_mobile BIGINT,  -- mobile pageload events
+    pageloads_desktop BIGINT, -- desktop pageload events
+    pageloads_bot BIGINT,     -- bot pageload events
+    clicks_mobile BIGINT,     -- mobile click events
+    clicks_desktop BIGINT,    -- desktop click events
+    clicks_bot BIGINT,        -- bot click events
+    PRIMARY KEY (userID, weeknum, Country)  -- composite primary key
+);
+
+INSERT INTO users_weekly
+SELECT
+    user_UserID AS userID,
+    WEEK(DATE_SUB(VisitDateTime, INTERVAL 1 DAY), 3) AS weeknum, 
+    COUNT(DISTINCT DATE_FORMAT(VisitDateTime, '%Y-%m-%d')) AS numDays,
+    ANY_VALUE(user_City) AS City,
+    COALESCE(user_Country, 'Null') AS Country,
+    SUM(CASE WHEN Activity = 'pageload' AND device_type = 'mobile' THEN 1 ELSE 0 END) AS pageloads_mobile,
+    SUM(CASE WHEN Activity = 'pageload' AND device_type = 'desktop' THEN 1 ELSE 0 END) AS pageloads_desktop,
+    SUM(CASE WHEN Activity = 'pageload' AND device_type = 'bot' THEN 1 ELSE 0 END) AS pageloads_bot,
+    SUM(CASE WHEN Activity = 'click' AND device_type = 'mobile' THEN 1 ELSE 0 END) AS clicks_mobile,
+    SUM(CASE WHEN Activity = 'click' AND device_type = 'desktop' THEN 1 ELSE 0 END) AS clicks_desktop,
+    SUM(CASE WHEN Activity = 'click' AND device_type = 'bot' THEN 1 ELSE 0 END) AS clicks_bot
+FROM clicks
+WHERE user_UserID IS NOT NULL AND device_type IS NOT NULL
+GROUP BY user_UserID, user_Country, WEEK(DATE_SUB(VisitDateTime, INTERVAL 1 DAY), 3);
+```
+
+
+PyMongo:
+
+```python
+collection = db["clicks"]
+
+# Define aggregation pipeline
+pipeline = [
+
+    # Stage 1: Filter to Valid Records
+    # Match documents with valid user.UserID
+    {"$match": {"user.UserID": {"$exists": True, "$ne": None}}},
+
+    # Stage 2: Add Fields
+    # normalize device_type
+    {
+        "$addFields": {
+            "device_type": {"$toLower": "$device_type"},
+
+            # calculate week number, subtracting 1 day to align with week start
+            "weeknum": {
+                "$week": {
+                    "$dateSubtract": {"startDate": "$VisitDateTime", "unit": "day", "amount": 1}
+                }
+            },
+
+            # extract date for grouping by day
+            "day": {"$dateToString": {"format": "%Y-%m-%d", "date": "$VisitDateTime"}}
+        }
+    },
+    # Stage 3: Group by User, Week, and Country
+    {
+        # grouping
+        "$group": {
+            "_id": {"userID": "$user.UserID", "weeknum": "$weeknum", "Country": "$user.Country"},
+
+            # collect unique days visited using a set to avoid duplicates
+            "uniqueDays": {"$addToSet": "$day"},
+
+            # retain the first city value for each group
+            "City": {"$first": "$user.City"},
+
+            # push device_type and activity counts (pageload, click) into an array
+            "counts": {
+                "$push": {
+                    "device_type": "$device_type",
+                    "pageload": {"$cond": [{"$eq": ["$Activity", "pageload"]}, 1, 0]},
+                    "click": {"$cond": [{"$eq": ["$Activity", "click"]}, 1, 0]}
+                }
+            }
+        }
+    },
+    # Stage 4: Compute Metrics per Device Type
+    # project the final structure, calculating pageloads and clicks by device type
+    {
+        "$project": {
+
+            # exclude the _id field from output
+            "_id": 0,
+
+            # extract userID, weeknum, and Country from the grouped _id
+            "userID": "$_id.userID",
+            "weeknum": "$_id.weeknum",
+            "Country": "$_id.Country",
+
+            # calculate the number of unique days
+            "numDays": {"$size": "$uniqueDays"},
+            "City": 1,
+
+            # calculate total pageloads for mobile devices
+            "pageloads.mobile": {
+
+                # sum the results of the mapped array to get the total number of clicks
+                "$sum": {
+
+                    # transform the 'counts' array to extract click counts for bot devices
+                    "$map": {
+
+                        # input array containing device_type, pageload, and click data
+                        "input": "$counts",
+
+                        # lias for each element in the counts array
+                        "as": "count",
+
+                        # expression to process each element
+                        "in": {
+
+                            # return the click count if device_type is 'mobile', otherwise 0
+                            "$cond": [
+
+                                # check if the device_type of the current element is 'mobile'
+                                {"$eq": ["$$count.device_type", "mobile"]},
+
+                                # if true, return the click count (1 or 0) for this element
+                                "$$count.pageload",
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+
+            # calculate total pageloads for desktop devices
+            # analogous process to described with comments above 
+            "pageloads.desktop": {
+                "$sum": {
+                    "$map": {
+                        "input": "$counts",
+                        "as": "count",
+                        "in": {
+                            "$cond": [
+                                {"$eq": ["$$count.device_type", "desktop"]},
+                                "$$count.pageload",
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+
+            # calculate total pageloads for bot devices
+            "pageloads.bot": {
+                "$sum": {
+                    "$map": {
+                        "input": "$counts",
+                        "as": "count",
+                        "in": {
+                            "$cond": [
+                                {"$eq": ["$$count.device_type", "bot"]},
+                                "$$count.pageload",
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+
+            # calculate total clicks for mobile devices
+            "clicks.mobile": {
+                "$sum": {
+                    "$map": {
+                        "input": "$counts",
+                        "as": "count",
+                        "in": {
+                            "$cond": [
+                                {"$eq": ["$$count.device_type", "mobile"]},
+                                "$$count.click",
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+
+            # calculate total clicks for desktop devices
+            "clicks.desktop": {
+                "$sum": {
+                    "$map": {
+                        "input": "$counts",
+                        "as": "count",
+                        "in": {
+                            "$cond": [
+                                {"$eq": ["$$count.device_type", "desktop"]},
+                                "$$count.click",
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+
+            # calculate total clicks for bot devices
+            "clicks.bot": {
+                "$sum": {
+                    "$map": {
+                        "input": "$counts",
+                        "as": "count",
+                        "in": {
+                            "$cond": [
+                                {"$eq": ["$$count.device_type", "bot"]},
+                                "$$count.click",
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    # Stage 5: Write results to the 'users_weekly' collection
+    # output the transformed data to the 'users_weekly' collection
+    {"$out": "users_weekly"}
+]
+
+# Execute pipeline
+collection.aggregate(pipeline)
+```
+
+We can check the top-line results as follows:
+
+
+```python
+collection = db['users_weekly']
+
+# Aggregation pipeline
+pipeline = [
+    {
+        "$group": {
+            "_id": None,  # Group all documents into a single group
+            "total_pageloads_mobile": {"$sum": "$pageloads.mobile"},
+            "total_pageloads_desktop": {"$sum": "$pageloads.desktop"},
+            "total_pageloads_bot": {"$sum": "$pageloads.bot"},
+            "total_clicks_mobile": {"$sum": "$clicks.mobile"},
+            "total_clicks_desktop": {"$sum": "$clicks.desktop"},
+            "total_clicks_bot": {"$sum": "$clicks.bot"}
+        }
+    },
+    {
+        "$project": {
+            "_id": 0,  # Exclude _id field
+            "total_pageloads_mobile": 1,
+            "total_pageloads_desktop": 1,
+            "total_pageloads_bot": 1,
+            "total_clicks_mobile": 1,
+            "total_clicks_desktop": 1,
+            "total_clicks_bot": 1
+        }
+    }
+]
+
+# Execute the aggregation
+result = list(collection.aggregate(pipeline))
+
+# Print result
+if result:
+    print(result[0])
+else:
+    print("No documents found.")
+```
+
+<p></p>
+
+```python
+# {'total_pageloads_mobile': 46649, 'total_pageloads_desktop': 132217, 'total_pageloads_bot': 62, 'total_clicks_mobile': 39884, 'total_clicks_desktop': 383409, 'total_clicks_bot': 72}
+```
+
+If you are following along in the SQL notebook, you will see that the results match.
+
+
+**sql result img**
+
+
+Breaking it out by country:
+
+
+SQL:
+
+```sql 
+%%sql
+
+SELECT Country,
+       SUM(pageloads_mobile) +
+       SUM(pageloads_desktop) +
+       SUM(pageloads_bot) +
+       SUM(clicks_mobile) +
+       SUM(clicks_desktop) +
+       SUM(clicks_bot) as total_count
+FROM users_weekly
+GROUP BY Country
+ORDER BY total_count DESC;
+```
+
+**sql result img**
+
+
+PyMongo:
+
+```python
+pipeline = [
+    {
+        "$group": {
+            "_id": "$Country",
+            "total_count": {
+                "$sum": {
+                    "$add": [
+                        "$pageloads.mobile",
+                        "$pageloads.desktop",
+                        "$pageloads.bot",
+                        "$clicks.mobile",
+                        "$clicks.desktop",
+                        "$clicks.bot"
+                    ]
+                }
+            }
+        }
+    },
+    {
+        "$sort": {"total_count": -1}
+    }
+]
+
+result = db["users_weekly"].aggregate(pipeline)
+for doc in list(result)[0:10]:
+    print(doc)
+```
+
+<p></p>
+
+```python
+# {'_id': 'India', 'total_count': 452969}
+# {'_id': 'United States', 'total_count': 29541}
+# {'_id': None, 'total_count': 16416}
+# {'_id': 'United Kingdom', 'total_count': 6182}
+# {'_id': 'Singapore', 'total_count': 4436}
+# {'_id': 'Australia', 'total_count': 4173}
+# {'_id': 'Nigeria', 'total_count': 4012}
+# {'_id': 'Pakistan', 'total_count': 3757}
+# {'_id': 'Canada', 'total_count': 3397}
+# {'_id': 'Germany', 'total_count': 3336}
+```
 
 
 
+# Create a Checkpoint
 
+This would be a good time to write the <code>users_weekly</code> collection to a file.
 
+```python
+export_folder = r'data\checkpoint'
 
+subprocess.run([
+    'mongodump',
+    '--host', 'localhost',
+    '--port', '27017',
+    '--db', 'clickstream',
+    '--collection', 'users_weekly',
+    '--out', export_folder
+], check=True)
 
+print(f"Exported to {export_folder}")
+```
 
+<p></p>
 
+```python
+# Exported to data\checkpoint
+```
 
+In SQL:
 
-
-
-
-
-
+```bash
+!mysqldump -e clickstream users_weekly > users_weekly.sql
+```
 
 
 
