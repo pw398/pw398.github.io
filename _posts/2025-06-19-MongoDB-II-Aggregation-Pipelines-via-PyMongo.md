@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "MongoDB Aggregation Pipelines via PyMongo"
+title:  "MongoDB II: Aggregation Pipelines with PyMongo"
 date:   2025-06-19 00:00:00 +0000
 categories: MongoDB Python
 ---
@@ -20,15 +20,15 @@ In this article, we'll continue to work with the Kirana Store clickstream data. 
 
 # Introduction
 
-To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll focus on PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable, and I figure that is likely the case for others.
+To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll focus on PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
 
-To be honest, it took me quite a bit of troubleshooting to get the results to match (though of course hindsight is 20/20). Flattening the data was relatively easy, as there aren't many layers of nested fields in the clickstream dataset. The acts of matching top-line results, user-level results, and eventually country-level results were a little more of a process. AI assistance (from Grok) was helpful, but there was definitely a trade-off between concise recommendations and high-quality ones. Trickle-charging with step-by-step input in a workspace, and modularization of code using attachments, proved to be a productive approach, though the limits of its capabilities (for now) were still noticeably encountered.
+To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in retrospect the issues are much clearer). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results were more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging with input, and modularizing code into attachments were productive strategies, but the limitations were still quite noticeable, for now.
 
 
 
 # The Kirana Store <code>clickstream</code> Data
 
-As a reminder, while we refer to structured databases as containing tables full of records containing fields, we refer to unstructured databases as containing collections of documents containing fields. A document from the data we are dealing with looks something like:
+As a reminder, while we refer to structured databases as containing tables full of records, which themselves contain fields, we refer to unstructured databases as containing collections of documents, which themselves contain fields. A document from the data we are dealing with looks something like this:
 
 ```js
 {'_id': ObjectId('60df102aad74d9467c94272a'),
@@ -40,7 +40,7 @@ As a reminder, while we refer to structured databases as containing tables full 
  'user': {'UserID': 'U100095', 'Country': 'Turkey'}}
 ```
 
-which is similar to Javascript Object Notation (JSON), though <code>ObjectId</code> is a MongoDB-specific data type, the <code>datetime</code> data is a Python data type, and JSON would use double-quotes instead of apostrophes.
+This is similar to Javascript Object Notation (JSON), though <code>ObjectId</code> is a MongoDB-specific data type, the <code>datetime</code> data is a Python data type, and true JSON would require double-quotes instead of apostrophes.
 
 It's also the case with unstructured data that the fields above may not exist for all records, and other records may contain data (like <code>user.City</code>) which the above does not.
 
@@ -73,31 +73,32 @@ We refer to the stage-based framework of aggregation in MongoDB as aggregation p
 
 ## Import Libraries
 
-We'll be using the following libraries. Install using <code>pip</code>, <code>!pip</code> or the conda shell if necessary.
-
+We'll be using the following libraries. First install them using the conda shell, <code>!pip</code>, or <code>pip</code> (or another method), depending on your environment.
 
 ```python
-# To connect to a MongoDB instance
+# to connect to a MongoDB instance
 from pymongo import MongoClient
-# For some types of data manipulation
+# for certain types of data manipulation
 import pandas as pd
-# For nicer document printing
+# for nicer document printing
 import pprint as pp
-# For working with datetime objects
+# for working with datetime objects
 from datetime import datetime
-# For timing operations
+# for timing operations
 import time
-# For exporting checkpoints
+# for exporting checkpoints
 import subprocess
-# For interactive plotting
+# for plotting
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 ```
 
 
-Next, establish a connection to a MongoDB instance, and print the list of databases currently in existence.
 
 ## Establish a MongoDB Connection
+
+Next, establish a connection to a MongoDB instance, and print the list of databases currently in existence.
+
 
 ```python
 client = MongoClient("mongodb://localhost:27017/")
@@ -110,7 +111,7 @@ print(client.list_database_names())
 # ['admin', 'config', 'local']
 ```
 
-In my case, the list currently contains only the system-related data.
+In my case, we see only the system-related data.
 
 
 
@@ -127,7 +128,7 @@ print(client.list_database_names())
 
 ## Import Data
 
-Next, we import the data from the <code>clicks.bson</code> and <code>clicks.metadata.json</code> files. The following cell is about setting variables to be used one cell below, you can skip to the next cell if you wish to use hard-coded parameters.
+Next, we import the data from the <code>clicks.bson</code> and <code>clicks.metadata.json</code> files. The following cell is about setting variables to be used in the next cell below, and you can go ahead and skip to the next cell if hard-coding.
 
 ```python
 HOST = "localhost"
@@ -142,7 +143,7 @@ collection_bson = BSON_FILE_NAME
 collection_json = JSON_FILE_NAME
 ```
 
-The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> element will clear any existing data of the same database and collection name before import.
+The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> element will clear any existing data from the same database and collection before the import.
 
 
 ```bash
@@ -211,7 +212,7 @@ collection.find_one()
 
 ## Count of Records
 
-Though the number of documents is mentioned upon import, we can also use the following command. To apply a filter, we would include something like <code>collection.count_documents({"user.City": "Colombo"})</code>, with either apostrophes or double-quotes being acceptable. In the Mongo shell, we would not have to encapsulate the keys and values this way.
+Though the number of documents is mentioned upon import, we can also use the following command. To apply a filter, we would include something like <code>collection.count_documents({"user.City": "Colombo"})</code>, with either apostrophes or double-quotes being acceptable. In the Mongo shell, we would not have to encapsulate the keys and values with quotes or apostrophes.
 
 
 ```python
@@ -228,7 +229,7 @@ collection.count_documents({})
 ## Get Date Range
 
 
-<p>To get the range of dates in the data, we can use something like the following. Note that this is our first pipeline (of the current article), in which the <code>$group</code> operator is used to aggregate documents. Setting <code>_id</code> to <code>None</code> effectively removes any grouping by specific field values and treats the entire collection as one group. Within this group, we compute the earliest and latest values of the <code>VisitDateTime</code>
+<p>To get the range of dates in the data, we can use something like the following. This is our first pipeline (in the current article), in which the <code>$group</code> operator is used to aggregate documents. Setting <code>_id</code> to <code>None</code> effectively removes any grouping by specific field values and treats the entire collection as one group. Within this group, we compute the earliest and latest values of the <code>VisitDateTime</code>.</p>
 
 
 ```python
