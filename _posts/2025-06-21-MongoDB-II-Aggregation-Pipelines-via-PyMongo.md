@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "MongoDB Aggregation Pipelines via PyMongo"
-date:   2025-06-21 00:00:00 +0000
+date:   2025-06-19 00:00:00 +0000
 categories: MongoDB Python
 ---
 
