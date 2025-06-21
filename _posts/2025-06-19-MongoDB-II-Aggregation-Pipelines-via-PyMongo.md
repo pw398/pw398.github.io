@@ -5,10 +5,11 @@ date:   2025-06-19 00:00:00 +0000
 categories: MongoDB Python
 ---
 
-In this article, we'll continue to work with the Kirana Store clickstream data. What started as an intent to include some SQL-analogies became a determination to provide matching aggregation results between MongoDB on unstructured data and SQL upon flattened data.
+In this article, we'll continue to work with the Kirana Store clickstream data, aggregating to a 'warehouse' collection and performing some analytics. I started with the intent to include some SQL-analogies, but ended up providing a companion piece to make the Mongo code more relatable.
 
 
-<img src="https://github.com/pw398/pw398.github.io/blob/main/_posts/images/mg2.png" style="height: 350px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2.png" style="height: 350px; width:auto;">
+
 
 
 # Outline
@@ -22,7 +23,7 @@ In this article, we'll continue to work with the Kirana Store clickstream data. 
 
 To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll focus on PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
 
-To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in retrospect the issues are much clearer). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results were more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging with input, and modularizing code into attachments were productive strategies, but limitations were (for now) still noticeable.
+To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, the nature of the issues is much clearer). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results were more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging with input, and modularizing code into attachments were productive strategies, but its limitations are (for now) still noticeable.
 
 
 
@@ -40,7 +41,7 @@ As a reminder, while we refer to structured databases as containing tables full 
  'user': {'UserID': 'U100095', 'Country': 'Turkey'}}
 ```
 
-This is similar to Javascript Object Notation (JSON), though <code>ObjectId</code> is a MongoDB-specific data type, the <code>datetime</code> data is a Python data type, and true JSON would require double-quotes instead of apostrophes.
+This is similar to Javascript Object Notation (JSON), though <code>ObjectId</code> is a MongoDB-specific data type, the <code>datetime</code> element is a Python data type, and true JSON would include double-quotes instead of apostrophes.
 
 It's also the case with unstructured data that the fields above may not exist for all records, and other records may contain data (like <code>user.City</code>) which the above does not.
 
@@ -73,7 +74,7 @@ We refer to the stage-based framework of aggregation in MongoDB as aggregation p
 
 ## Import Libraries
 
-We'll be using the following libraries. First install them using the conda shell, <code>!pip</code>, or <code>pip</code> (or another method), depending on your environment.
+We'll be using the following libraries. First install them using the conda shell, <code>!pip</code>, or <code>pip</code> if necessary, depending on your environment.
 
 ```python
 # to connect to a MongoDB instance
@@ -143,7 +144,7 @@ collection_bson = BSON_FILE_NAME
 collection_json = JSON_FILE_NAME
 ```
 
-The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> element will clear any existing data from the same database and collection before the import.
+The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> element will result in any existing data from the same database and collection being cleared before the import,
 
 
 ```bash
@@ -212,7 +213,7 @@ collection.find_one()
 
 ## Count of Records
 
-Though the number of documents is mentioned upon import, we can also use the following command. To apply a filter, we would include something like <code>collection.count_documents({"user.City": "Colombo"})</code>, with either apostrophes or double-quotes being acceptable. In the Mongo shell, we would not have to encapsulate the keys and values with quotes or apostrophes.
+Though the number of documents is mentioned upon import, we can also use the following command. To apply a signle filter, we would use something like <code>collection.count_documents({"user.City": "Colombo"})</code>, with either apostrophes or double-quotes being acceptable. In the Mongo shell, we would not have to encapsulate the keys and values with quotes or apostrophes.
 
 
 ```python
@@ -229,7 +230,7 @@ collection.count_documents({})
 ## Get Date Range
 
 
-<p>To get the range of dates in the data, we can use something like the following. This is our first pipeline (in the current article), in which the <code>$group</code> operator is used to aggregate documents. Setting <code>_id</code> to <code>None</code> effectively removes any grouping by specific field values and treats the entire collection as one group. Within this group, we compute the earliest and latest values of the <code>VisitDateTime</code>.</p>
+<p>To get the range of dates in the data, we can use something like the following. This is our first pipeline (in this article), in which the <code>$group</code> operator is used to aggregate documents. Setting <code>_id</code> to <code>None</code> effectively removes any grouping by specific field values and treats the entire collection as one group. Within this group, we compute the earliest and latest values of the <code>VisitDateTime</code>.</p>
 
 
 ```python
@@ -260,7 +261,7 @@ for doc in result:
 ## Count of Unique <code>webClientID</code> Values
 
 
-<code>webClientID</code> groups individual visits by user, so long as they connect using the same device and system as prior visits. As we'll see later, the data also include a <code>user.UserID</code> field for those who have created (and logged into) an account, however a minority of documents contain that information, whereas all documents contain a <code>webClientID</code>. This introduces the <code>$count</code> operator.
+<code>webClientID</code> values group individual visits by user, so long as they connect using the same device and system as prior visits. As we'll see later, the data also include a <code>user.UserID</code> field for those who have created (and logged into) an account, however a minority of documents contain that information, whereas all documents contain a <code>webClientID</code>. This introduces the <code>$count</code> operator.
 
 
 ```python
@@ -280,14 +281,14 @@ print(f"Number of unique webClientID values: {num_unique}")
 # Number of unique webClientID values: 1091455
 ```
 
-With smaller data (less than 16MB in Jupyter notebook), we could do this in simpler fashion, using:
+With smaller data (less than 16MB in Jupyter notebook), we could do this in simpler fashion, using the <code>distinct</code> keyword.
 
 ```python
 # collection = db['clicks']
 # len(collection.distinct('webClientID'))
 ```
 
-It is analogous to the following in SQL:
+It is analogous to <code>COUNT(DISTINCT ...)</code> in SQL:
 
 ```sql
 SELECT COUNT(DISTINCT webClientID)
@@ -316,7 +317,7 @@ len(result)
 # 36791
 ```
 
-Clearly a small proportion. The SQL analog would be as follows.
+Clearly a small proportion of visitors have an account. The SQL analog to the above would be as follows.
 
 
 ```sql
@@ -351,7 +352,7 @@ print(count)
 # 34050
 ```
 
-The SQL analog would simply be:
+The SQL analog:
 
 ```sql
 SELECT COUNT(DISTINCT user_UserID)
@@ -365,7 +366,7 @@ FROM clicks;
 ## Distinct Values for <code>device.OS</code>
 
 
-Now for something a little more interesting. Let's suppose we are interested in understanding our customers' device-related preferences. For this, we can utilize the nested <code>device.OS</code> and <code>device.Browser</code> fields. The operating systems are a good indicator of whether a user is on a mobile or desktop device, and the browsers may offer a clear indication of whether a visitor is a robot. I relied on AI to make the classifications, so forgive any technical inaccuracies, but we will use the logic that a visitor is a robot if the browser indicates so, and that this classification will take precedence over distinctions in operating system. If not a robot, we will classify the visitor as either desktop or mobile based on operating system, and label each document accordingly by adding a field called <code>device_type</code>.
+Let's suppose we are interested in understanding our customers' device-related preferences or behavior. For this, we can utilize the nested <code>device.OS</code> and <code>device.Browser</code> fields. The operating systems are a good indicator of whether a user is on a mobile or desktop device, and the browsers may offer a clear indication of whether a visitor is a robot. I relied on AI to make the classifications, so forgive any technical inaccuracies, but we will use the logic that a visitor is a robot if the browser indicates so, and this classification will take precedence over distinctions in operating system. If not a robot, we will classify the visitor as either desktop or mobile based on operating system, and label each document accordingly by adding a field called <code>device_type</code>.
 
 To get the list of unique operating systems, we can use the <code>distinct</code> keyword as follows. The second line simply provides the output as a horizontal list to save space.
 
@@ -444,6 +445,7 @@ The classification operation will leverage Python, with a bit of PyMongo, using 
 
 
 ```python
+# normalize list elements to lower-case
 mobile_os = [x.lower() for x in mobile_os]
 desktop_os = [x.lower() for x in desktop_os]
 bot_browsers = [x.lower() for x in bot_browsers]
@@ -488,6 +490,17 @@ for record in collection.find({}, {'device.OS': 1, 'device.Browser': 1}):
 
 elapsed_time = time.time() - start_time
 print(f"Completed: Updated device_type for {record_count} records in {elapsed_time:.0f} seconds")
+```
+
+<p></p>
+
+```python
+# Processed 100000 records
+# Processed 200000 records
+# ...
+# Processed 6000000 records
+# Processed 6100000 records
+# Completed: Updated device_type for 6100000 records in 2638 seconds
 ```
 
 The SQL analog, which I'll write as if we are using SQL magic commands in a Python notebook, is as follows.
@@ -647,6 +660,9 @@ The SQL analog (via MySQL through Bash):
 mysqldump --host=localhost --port=3306 --user=root --password --databases clickstream --tables clicks > data/checkpoint/clickstream_clicks.sql
 ```
 
+Might be a good time to grab a coffee, or go for a walk.
+
+
 
 # Import From Checkpoint
 
@@ -762,7 +778,7 @@ list(df.columns)
 #  'user_UserID']
 ```
 
-The SQL equivalent:
+The SQL equivalent of the above:
 
 ```sql
 USE clickstream;
@@ -771,7 +787,7 @@ FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = 'clicks';
 ```
 
-As a sanity check, we'll count the records in the pandas dataframe exported to CSV, expecting 6.1M like the .bson data originally imported.
+As a sanity check, we'll count the records in the pandas dataframe exported to CSV, expecting 6.1M, as with the .bson data originally imported.
 
 ```python
 df = pd.DataFrame(pd.read_csv('clicks_structured.csv'))
@@ -788,7 +804,7 @@ len(df)
 
 # Create <code>users_weekly</code> Table
 
-We can see that a large number of documents (6.1M) have accrued only over a relatively short amount of time (3 weeks). It may be helpful to create a collection with aggregated, and perhaps filtered data to facilitate shorter run-time of queries for analytical purposes. Such analytics would still require some level of date information, but we'll first focus on the user and week level. To help ensure consistency with the country-level insights between our MongoDB and SQL queries, and because some users have operated from multiple countries, I'll break things out at the country level as well. If we wanted to ensure consistent results at the city level as well, we would break things out further, or ensure a consistent method of assigning only a single city per user.
+We can see that a large number of documents (6.1M) have accrued only over a relatively short amount of time (3 weeks). It may be helpful to create a collection with aggregated, and perhaps filtered data to facilitate shorter run-time of queries for analytical purposes. It would be optimal to retain some level of date information, but we'll aggregate to the week level. I'll filter to only users with accounts as well, and to ensure consistency with the SQL operations at a country level, include a breakout by country. If we wanted to ensure consistent results at the city level as well, we would have to either break things out further, or ensure a consistent method of assigning only a single city per user.
 
 It will help, in terms of speed, to add an index to the <code>user.UserID</code> field. In MongoDB, it will be a sparse index, meaning it only applies to the minority of documents which contain that field. 
 
@@ -1132,26 +1148,6 @@ If you are following along in the SQL notebook, you will see that the results ma
 Breaking it out by country:
 
 
-SQL:
-
-```sql 
-%%sql
-
-SELECT Country,
-       SUM(pageloads_mobile) +
-       SUM(pageloads_desktop) +
-       SUM(pageloads_bot) +
-       SUM(clicks_mobile) +
-       SUM(clicks_desktop) +
-       SUM(clicks_bot) as total_count
-FROM users_weekly
-GROUP BY Country
-ORDER BY total_count DESC;
-```
-
-**sql result img**
-
-
 PyMongo:
 
 ```python
@@ -1199,6 +1195,25 @@ for doc in list(result)[0:10]:
 ```
 
 
+SQL:
+
+```sql 
+%%sql
+
+SELECT Country,
+       SUM(pageloads_mobile) +
+       SUM(pageloads_desktop) +
+       SUM(pageloads_bot) +
+       SUM(clicks_mobile) +
+       SUM(clicks_desktop) +
+       SUM(clicks_bot) as total_count
+FROM users_weekly
+GROUP BY Country
+ORDER BY total_count DESC;
+```
+
+**sql result img**
+
 
 # Create a Checkpoint
 
@@ -1225,7 +1240,7 @@ print(f"Exported to {export_folder}")
 # Exported to data\checkpoint
 ```
 
-In SQL:
+In MySQL, using Bash:
 
 ```bash
 !mysqldump -e clickstream users_weekly > users_weekly.sql
@@ -1234,550 +1249,411 @@ In SQL:
 
 
 
+We could do something similar based on <code>webClientID</code> for the 'non-users', though the operations would take significantly longer, but I feel the need to start wrapping it up. What we'll do below is create a 2 x 1 subplot of charts, with the first breaking out activity type by country, for the top 5 countries (though you can easily adjust that number), and the bottom plotting clicks vs. pageloads by user for those countries, with the dots being color-coded.
+
+Pretty much all of the aggregation pipeline operators mentioned above will be used in the functions for aggregating data from the <code>users_weekly</code> collection, and I'll leave it largely to the extensive comments to explain the code. But if you're like me, what's most illustrative are the SQL analogies, which I'll lay out first.
 
 
 
-# Title....
+### The <code>fetch_top_countries</code> Function
 
-Time for some analysis. I would like to see the distribution of activity by country, for the top ones anyway. It will also be interesting to compare pageload counts to click counts, and users to non-users. 
+The <code>fetch_top_countries(n)</code> function is used to first determine which countries to show. The criteria is the amount of total activity (pageloads plus clicks), and <code>n</code> is obviously the number of countries to select, with the total activity sorted in descending order.
 
-**DESCRIBE CODE, ADD COMMENTS, ETC.**
+```python
+def fetch_top_countries(n):
+    query_top_countries = f"""
+```
+```sql
+    SELECT Country
+    FROM (
+        SELECT Country, SUM(pageloads_mobile + pageloads_desktop + pageloads_bot + clicks_mobile + clicks_desktop + clicks_bot) as total_count
+        FROM users_weekly
+        WHERE Country IS NOT NULL AND Country != 'Null'
+        GROUP BY Country
+        ORDER BY total_count DESC
+        LIMIT {n}
+    )
+```
+```python
+    """
+    return pd.read_sql(query_top_countries, engine)['Country'].tolist()
+```
 
+What that looks like in PyMongo is the following:
 
 
 ```python
-# Function to fetch data for a collection
-def fetch_data(collection, top_countries=None, sort_by_total=True):
-    # Pipeline for pageloads
+def fetch_top_countries(collection, n):
     pipeline = [
-        {
-            "$match": {
-                "Country": {"$exists": True, "$ne": None}
-            }
-        },
-        {
-            "$project": {
-                "Country": 1,
-                "pageloads": {"$objectToArray": "$pageloads"}
-            }
-        },
-        {
-            "$unwind": "$pageloads"
-        },
-        {
-            "$group": {
-                "_id": "$Country",
-                "pageloads_count": {"$sum": "$pageloads.v"}
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "Country": "$_id",
-                "pageloads_count": 1
-            }
-        }
+        # filter documents with valid Country field
+        {"$match": {"Country": {"$exists": True, "$ne": None}}},
+        # convert pageloads and clicks to arrays
+        {"$project": {"Country": 1, "pageloads": {"$objectToArray": "$pageloads"}, "clicks": {"$objectToArray": "$clicks"}}},
+        # unwind pageloads and clicks arrays
+        {"$unwind": "$pageloads"},
+        {"$unwind": "$clicks"},
+        # group by Country, summing pageloads and clicks
+        {"$group": {"_id": "$Country", "total_count": {"$sum": {"$add": ["$pageloads.v", "$clicks.v"]}}}},
+        # sort by total count in descending order
+        {"$sort": {"total_count": -1}},
+        # limit to top N countries
+        {"$limit": n},
+        # project to extract Country name
+        {"$project": {"_id": 0, "Country": "$_id"}}
     ]
-    if top_countries:
-        pipeline.insert(0, {"$match": {"Country": {"$in": top_countries}}})
+    return [doc['Country'] for doc in collection.aggregate(pipeline)]
+```
+
+
+
+### The <code>fetch_bar_data</code> Function
+
+Getting the sum of pageloads and clicks by country for the bar chart at the top of the subplot are the following two queries wrapped in a Python function, for SQL:
+
+
+```python
+def fetch_bar_data(top_countries):
+    countries_str = ','.join(f"'{c}'" for c in top_countries)
+    query_pageloads = f"""
+```
+```sql
+    SELECT Country, SUM(pageloads_mobile + pageloads_desktop + pageloads_bot) as pageloads_count
+    FROM users_weekly
+    WHERE Country IS NOT NULL AND Country != 'Null' AND Country IN ({countries_str})
+    GROUP BY Country
+```
+```python
+    """
+```
+```python
+    query_clicks = f"""
+```
+```sql
+    SELECT Country, SUM(clicks_mobile + clicks_desktop + clicks_bot) as clicks_count
+    FROM users_weekly
+    WHERE Country IS NOT NULL AND Country != 'Null' AND Country IN ({countries_str})
+    GROUP BY Country
+```
+```python
+    """
+```
+```python
+    pageloads_data = pd.read_sql(query_pageloads, engine)
+    clicks_data = pd.read_sql(query_clicks, engine)
+
+    countries = top_countries
+    pageloads_counts = [pageloads_data[pageloads_data['Country'] == c]['pageloads_count'].iloc[0] if c in pageloads_data['Country'].values else 0 for c in countries]
+    clicks_counts = [clicks_data[clicks_data['Country'] == c]['clicks_count'].iloc[0] if c in clicks_data['Country'].values else 0 for c in countries]
+
+    return countries, pageloads_counts, clicks_counts
+```
+
+
+And the PyMongo equivalent is as follows:
+
+
+```python
+def fetch_bar_data(collection, countries):
+    # pipeline to aggregate pageloads by country
+    pipeline = [
+        # filter documents with valid Country field and specified countries
+        {"$match": {"Country": {"$exists": True, "$ne": None, "$in": countries}}},
+        # convert pageloads object to array for unwinding
+        {"$project": {"Country": 1, "pageloads": {"$objectToArray": "$pageloads"}}},
+        # unwind pageloads array to process each entry
+        {"$unwind": "$pageloads"},
+        # group by Country, summing pageload values
+        {"$group": {"_id": "$Country", "pageloads_count": {"$sum": "$pageloads.v"}}},
+        # project to rename _id to Country and keep pageloads_count
+        {"$project": {"_id": 0, "Country": "$_id", "pageloads_count": 1}}
+    ]
     pageloads_data = list(collection.aggregate(pipeline))
 
-    # Pipeline for clicks
+    # pipeline to aggregate clicks by country
     pipeline = [
-        {
-            "$match": {
-                "Country": {"$exists": True, "$ne": None}
-            }
-        },
-        {
-            "$project": {
-                "Country": 1,
-                "clicks": {"$objectToArray": "$clicks"}
-            }
-        },
-        {
-            "$unwind": "$clicks"
-        },
-        {
-            "$group": {
-                "_id": "$Country",
-                "clicks_count": {"$sum": "$clicks.v"}
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "Country": "$_id",
-                "clicks_count": 1
-            }
-        }
+        # filter documents with valid Country field and specified countries
+        {"$match": {"Country": {"$exists": True, "$ne": None, "$in": countries}}},
+        # convert clicks object to array for unwinding
+        {"$project": {"Country": 1, "clicks": {"$objectToArray": "$clicks"}}},
+        # unwind clicks array to process each entry
+        {"$unwind": "$clicks"},
+        # group by Country, summing click values
+        {"$group": {"_id": "$Country", "clicks_count": {"$sum": "$clicks.v"}}},
+        # project to rename _id to Country and keep clicks_count
+        {"$project": {"_id": 0, "Country": "$_id", "clicks_count": 1}}
     ]
-    if top_countries:
-        pipeline.insert(0, {"$match": {"Country": {"$in": top_countries}}})
     clicks_data = list(collection.aggregate(pipeline))
 
-    # Merge data
-    countries = top_countries if top_countries else sorted(set([d['Country'] for d in pageloads_data + clicks_data]))
+    # Ensure all specified countries are included, defaulting to 0 if no data
+    pageloads_counts = [next((d['pageloads_count'] for d in pageloads_data if d['Country'] == c), 0) for c in countries]
+    clicks_counts = [next((d['clicks_count'] for d in clicks_data if d['Country'] == c), 0) for c in countries]
+
+    return countries, pageloads_counts, clicks_counts
+```
+
+
+Finally, the SQL version of the function to grab the scatter plot data is as follows:
+
+
+```python
+def fetch_scatter_data(top_countries):
+    countries_str = ','.join(f"'{c}'" for c in top_countries)
+    query_scatter = f"""
+```
+```sql
+    SELECT userID, Country,
+           SUM(pageloads_mobile + pageloads_desktop + pageloads_bot) as total_pageloads,
+           SUM(clicks_mobile + clicks_desktop + clicks_bot) as total_clicks
+    FROM users_weekly
+    WHERE Country IS NOT NULL AND Country != 'Null' AND Country IN ({countries_str})
+    GROUP BY userID, Country
+```
+```python
+    """
+```
+```python
+    return pd.read_sql(query_scatter, engine)
+```
+
+
+And the PyMongo equivalent is:
+
+
+```python
+def fetch_scatter_data(collection, countries):
+    pipeline = [
+        # filter documents for specified countries
+        {"$match": {"Country": {"$exists": True, "$ne": None, "$in": countries}}},
+        # group by userID and Country, summing pageloads and clicks
+        {"$group": {
+            "_id": {"userID": "$userID", "Country": "$Country"},
+            "totalPageloads": {"$sum": {"$add": ["$pageloads.mobile", "$pageloads.desktop", "$pageloads.bot"]}},
+            "totalClicks": {"$sum": {"$add": ["$clicks.mobile", "$clicks.desktop", "$clicks.bot"]}}
+        }},
+        # add totalActivity field for sorting
+        {"$addFields": {"totalActivity": {"$add": ["$totalPageloads", "$totalClicks"]}}},
+        # sort by total activity in descending order
+        {"$sort": {"totalActivity": -1}},
+        # project relevant fields
+        {"$project": {"_id": 0, "userID": "$_id.userID", "Country": "$_id.Country", "totalPageloads": 1, "totalClicks": 1}}
+    ]
+    return list(collection.aggregate(pipeline))
+```
+
+
+Putting the PyMongo functions all together, along with the plotting functions, we have:
+
+
+```python
+collection = db['users_weekly']
+
+# function to fetch top N countries by total pageloads and clicks
+def fetch_top_countries(collection, n):
+    pipeline = [
+        # filter documents with valid Country field
+        {"$match": {"Country": {"$exists": True, "$ne": None}}},
+        # convert pageloads and clicks to arrays
+        {"$project": {"Country": 1, "pageloads": {"$objectToArray": "$pageloads"}, "clicks": {"$objectToArray": "$clicks"}}},
+        # unwind pageloads and clicks arrays
+        {"$unwind": "$pageloads"},
+        {"$unwind": "$clicks"},
+        # group by Country, summing pageloads and clicks
+        {"$group": {"_id": "$Country", "total_count": {"$sum": {"$add": ["$pageloads.v", "$clicks.v"]}}}},
+        # sort by total count in descending order
+        {"$sort": {"total_count": -1}},
+        # limit to top N countries
+        {"$limit": n},
+        # project to extract Country name
+        {"$project": {"_id": 0, "Country": "$_id"}}
+    ]
+    return [doc['Country'] for doc in collection.aggregate(pipeline)]
+
+# function to fetch bar plot data for specified countries
+def fetch_bar_data(collection, countries):
+    # pipeline to aggregate pageloads by country
+    pipeline = [
+        # filter documents with valid Country field and specified countries
+        {"$match": {"Country": {"$exists": True, "$ne": None, "$in": countries}}},
+        # convert pageloads object to array for unwinding
+        {"$project": {"Country": 1, "pageloads": {"$objectToArray": "$pageloads"}}},
+        # unwind pageloads array to process each entry
+        {"$unwind": "$pageloads"},
+        # group by Country, summing pageload values
+        {"$group": {"_id": "$Country", "pageloads_count": {"$sum": "$pageloads.v"}}},
+        # project to rename _id to Country and keep pageloads_count
+        {"$project": {"_id": 0, "Country": "$_id", "pageloads_count": 1}}
+    ]
+    pageloads_data = list(collection.aggregate(pipeline))
+
+    # pipeline to aggregate clicks by country
+    pipeline = [
+        # filter documents with valid Country field and specified countries
+        {"$match": {"Country": {"$exists": True, "$ne": None, "$in": countries}}},
+        # convert clicks object to array for unwinding
+        {"$project": {"Country": 1, "clicks": {"$objectToArray": "$clicks"}}},
+        # unwind clicks array to process each entry
+        {"$unwind": "$clicks"},
+        # group by Country, summing click values
+        {"$group": {"_id": "$Country", "clicks_count": {"$sum": "$clicks.v"}}},
+        # project to rename _id to Country and keep clicks_count
+        {"$project": {"_id": 0, "Country": "$_id", "clicks_count": 1}}
+    ]
+    clicks_data = list(collection.aggregate(pipeline))
+
+    # Ensure all specified countries are included, defaulting to 0 if no data
     pageloads_counts = [next((d['pageloads_count'] for d in pageloads_data if d['Country'] == c), 0) for c in countries]
     clicks_counts = [next((d['clicks_count'] for d in clicks_data if d['Country'] == c), 0) for c in countries]
 
     return countries, pageloads_counts, clicks_counts
 
-# Get top 5 countries by total count (pageloads + clicks) for users
-users_collection = db['users']
-pipeline = [
-    {
-        "$match": {
-            "Country": {"$exists": True, "$ne": None}
-        }
-    },
-    {
-        "$project": {
-            "Country": 1,
-            "pageloads": {"$objectToArray": "$pageloads"},
-            "clicks": {"$objectToArray": "$clicks"}
-        }
-    },
-    {
-        "$unwind": "$pageloads"
-    },
-    {
-        "$unwind": "$clicks"
-    },
-    {
-        "$group": {
-            "_id": "$Country",
-            "total_count": {
-                "$sum": {"$add": ["$pageloads.v", "$clicks.v"]}
-            }
-        }
-    },
-    {
-        "$sort": {"total_count": -1}
-    },
-    {
-        "$limit": 5
-    },
-    {
-        "$project": {
-            "_id": 0,
-            "Country": "$_id"
-        }
-    }
-]
-top_countries = [doc['Country'] for doc in users_collection.aggregate(pipeline)]
+# function to fetch scatter plot data for specified countries
+def fetch_scatter_data(collection, countries):
+    pipeline = [
+        # filter documents for specified countries
+        {"$match": {"Country": {"$exists": True, "$ne": None, "$in": countries}}},
+        # group by userID and Country, summing pageloads and clicks
+        {"$group": {
+            "_id": {"userID": "$userID", "Country": "$Country"},
+            "totalPageloads": {"$sum": {"$add": ["$pageloads.mobile", "$pageloads.desktop", "$pageloads.bot"]}},
+            "totalClicks": {"$sum": {"$add": ["$clicks.mobile", "$clicks.desktop", "$clicks.bot"]}}
+        }},
+        # add totalActivity field for sorting
+        {"$addFields": {"totalActivity": {"$add": ["$totalPageloads", "$totalClicks"]}}},
+        # sort by total activity in descending order
+        {"$sort": {"totalActivity": -1}},
+        # project relevant fields
+        {"$project": {"_id": 0, "userID": "$_id.userID", "Country": "$_id.Country", "totalPageloads": 1, "totalClicks": 1}}
+    ]
+    return list(collection.aggregate(pipeline))
 
-# Fetch data for users and non_users
-users_data = fetch_data(users_collection, top_countries=top_countries)
-non_users_collection = db['non_users_weekly']
-non_users_data = fetch_data(non_users_collection, top_countries=top_countries)
+# fetch top 5 countries
+top_countries = fetch_top_countries(collection, 5)
 
-# Create subplot: 2 rows, 1 column
+# fetch bar plot data
+bar_data = fetch_bar_data(collection, top_countries)
+
+# fetch scatter plot data
+scatter_data = fetch_scatter_data(collection, top_countries)
+
+# prepare scatter plot data
+countries_data = {country: {"pageloads": [], "clicks": [], "userIDs": []} for country in top_countries}
+for doc in scatter_data:
+    country = doc["Country"]
+    countries_data[country]["pageloads"].append(doc["totalPageloads"])
+    countries_data[country]["clicks"].append(doc["totalClicks"])
+    countries_data[country]["userIDs"].append(doc["userID"])
+
+# create subplot with 2 rows, 1 column
 fig = make_subplots(
     rows=2, cols=1,
-    subplot_titles=('Users: Country Distribution', 'Non-Users: Country Distribution'),
+    subplot_titles=('Country Distribution (Top 5)', 'Pageloads vs Clicks by User'),
     vertical_spacing=0.15
 )
 
-# Add traces for Users (Row 1) with legend
+# add bar plot traces
 fig.add_trace(
-    go.Bar(name='Pageloads', x=users_data[0], y=users_data[1], marker_color='#40E0D0', showlegend=True),
+    go.Bar(
+        name='Pageloads',
+        x=bar_data[0],
+        y=bar_data[1],
+        marker_color='#40E0D0',
+        showlegend=True,
+        legendgroup='bar',
+        legend='legend1'
+    ),
     row=1, col=1
 )
 fig.add_trace(
-    go.Bar(name='Clicks', x=users_data[0], y=users_data[2], marker_color='#C71585', showlegend=True),
+    go.Bar(
+        name='Clicks',
+        x=bar_data[0],
+        y=bar_data[2],
+        marker_color='#C71585',
+        showlegend=True,
+        legendgroup='bar',
+        legend='legend1'
+    ),
     row=1, col=1
 )
 
-# Add traces for Non-Users (Row 2) without legend
-fig.add_trace(
-    go.Bar(name='Pageloads', x=non_users_data[0], y=non_users_data[1], marker_color='#40E0D0', showlegend=False),
-    row=2, col=1
-)
-fig.add_trace(
-    go.Bar(name='Clicks', x=non_users_data[0], y=non_users_data[2], marker_color='#C71585', showlegend=False),
-    row=2, col=1
-)
-
-# Update layout
-fig.update_layout(
-    barmode='group',
-    title_text='Distribution of Top 5 Countries for Pageloads and Clicks',
-    template='plotly_dark',
-    showlegend=True,
-    height=800  # Adjust height for two subplots
-)
-
-# Update axes
-fig.update_xaxes(title_text='Country', row=1, col=1)
-fig.update_xaxes(title_text='Country', row=2, col=1)
-fig.update_yaxes(title_text='Count', row=1, col=1)
-fig.update_yaxes(title_text='Count', row=2, col=1)
-
-# Save and show the plot
-fig.write_html('country_distribution_subplots.html')
-fig.show()  # Display interactively
-```
-
-<p></p>
-
-{% include country_distribution_subplots.html %}
-
-
-Perhaps we're interested in the correlation between pageloads and clicks. Plotly makes it easy to encode additional information into our charts, such as tooltips when hovering, and the ability to color-code for country. I'll filter to the top 5 countries that we saw above. Note that you can click on legend items to filter the visual to those countries.
-
-**CONFIRM THAT**
-
-```python
-collection = db['users_weekly']
-
-# Define countries to filter
-countries = ["India", "United States", "United Kingdom", "Australia", "Indonesia"]
-
-# Aggregate data: sum pageloads and clicks per user, filter by country
-pipeline = [
-    {
-        "$match": {
-            "Country": {"$in": countries}
-        }
-    },
-    {
-        "$project": {
-            "userID": 1,
-            "Country": 1,
-            "pageloads": {"$objectToArray": "$pageloads"},
-            "clicks": {"$objectToArray": "$clicks"}
-        }
-    },
-    {
-        "$unwind": "$pageloads"
-    },
-    {
-        "$unwind": "$clicks"
-    },
-    {
-        "$group": {
-            "_id": {
-                "userID": "$userID",
-                "Country": "$Country"
-            },
-            "total_pageloads": {"$sum": "$pageloads.v"},
-            "total_clicks": {"$sum": "$clicks.v"}
-        }
-    },
-    {
-        "$project": {
-            "_id": 0,
-            "userID": "$_id.userID",
-            "Country": "$_id.Country",
-            "total_pageloads": 1,
-            "total_clicks": 1
-        }
-    }
-]
-data = list(collection.aggregate(pipeline))
-
-# Prepare data for scatter plot
-countries_data = {country: {"pageloads": [], "clicks": [], "userIDs": []} for country in countries}
-for doc in data:
-    country = doc["Country"]
-    countries_data[country]["pageloads"].append(doc["total_pageloads"])
-    countries_data[country]["clicks"].append(doc["total_clicks"])
-    countries_data[country]["userIDs"].append(doc["userID"])
-
-# Define colors for countries
+# define color map for scatter plot
 color_map = {
-    "India": "#FF6347",  # Tomato
-    "United States": "#4682B4",  # SteelBlue
-    "United Kingdom": "#32CD32",  # LimeGreen
-    "Australia": "#FFD700",  # Gold
-    "Indonesia": "#9932CC"  # DarkOrchid
+    top_countries[0]: "#FF6347",
+    top_countries[1]: "#4682B4",
+    top_countries[2]: "#32CD32",
+    top_countries[3]: "#FFD700",
+    top_countries[4]: "#9932CC"
 }
-
-# Create scatter plot
-fig = go.Figure()
-
-for country in countries:
-    if countries_data[country]["pageloads"]:  # Only add traces with data
+# add scatter plot traces
+for country in top_countries:
+    if countries_data[country]["pageloads"]:
         fig.add_trace(
             go.Scatter(
                 x=countries_data[country]["pageloads"],
                 y=countries_data[country]["clicks"],
                 mode='markers',
                 name=country,
-                marker=dict(
-                    size=10,
-                    color=color_map[country],
-                    opacity=0.5,
-                    line=dict(width=0.5, color='black')
-                ),
+                marker=dict(size=10, color=color_map[country], opacity=0.5, line=dict(width=0.5, color='black')),
                 text=countries_data[country]["userIDs"],
-                hovertemplate="User: %{text}<br>Pageloads: %{x}<br>Clicks: %{y}<extra></extra>"
-            )
+                hovertemplate="User: %{text}<br>Pageloads: %{x}<br>Clicks: %{y}<extra></extra>",
+                showlegend=True,
+                legendgroup='scatter',
+                legend='legend2'
+            ),
+            row=2, col=1
         )
 
-# Update layout
+# update layout
 fig.update_layout(
-    title='Pageloads vs Clicks by User (Filtered by Country)',
-    xaxis_title='Total Pageloads',
-    yaxis_title='Total Clicks',
-    template='plotly_white',  # White background
-    xaxis=dict(range=[0, 1500]),  # X-axis limit
-    yaxis=dict(range=[0, 10000]),  # Y-axis limit
+    barmode='group',
+    title_text='Users Weekly: Country Distribution and Pageloads vs Clicks',
+    template='plotly_dark',
     showlegend=True,
-    height=600
+    legend1=dict(x=1.05, y=1.0, xanchor='left', yanchor='top', title='Bar Chart'),
+    legend2=dict(x=1.05, y=0.2, xanchor='left', yanchor='bottom', title='Scatter Plot'),
+    height=800
 )
 
-# Save and show the plot
-fig.write_html('pageloads_vs_clicks_scatter.html')
-fig.show()  # Display interactively
+# update axes
+fig.update_xaxes(title_text='Country', row=1, col=1)
+fig.update_xaxes(title_text='Total Pageloads', range=[0, 750], row=2, col=1)
+fig.update_yaxes(title_text='Count', row=1, col=1)
+fig.update_yaxes(title_text='Total Clicks', range=[0, 5000], row=2, col=1)
+
+# save and show plot
+fig.write_html('top_5_country_pageloads_and_clicks.html')
+fig.show()
 ```
 
-<p></p>
 
-{% include pageloads_vs_clicks_scatter.html %}
-
-
-Clearly India is the dominant country. Let's do a drilldown into India by municipality.
+Flip to dark mode if you're not in it already (why wouldn't you be, it's so much cooler) to render the following plots properly.
 
 
-```python
-collection = db['users_weekly']
-
-# Aggregate data: sum pageloads and clicks per user, filter by India
-pipeline = [
-    {
-        "$match": {
-            "Country": "India",
-            "City": {"$exists": True, "$ne": None}
-        }
-    },
-    {
-        "$project": {
-            "userID": 1,
-            "City": 1,
-            "pageloads": {"$objectToArray": "$pageloads"},
-            "clicks": {"$objectToArray": "$clicks"}
-        }
-    },
-    {
-        "$unwind": "$pageloads"
-    },
-    {
-        "$unwind": "$clicks"
-    },
-    {
-        "$group": {
-            "_id": {
-                "userID": "$userID",
-                "City": "$City"
-            },
-            "total_pageloads": {"$sum": "$pageloads.v"},
-            "total_clicks": {"$sum": "$clicks.v"}
-        }
-    },
-    {
-        "$project": {
-            "_id": 0,
-            "userID": "$_id.userID",
-            "City": "$_id.City",
-            "total_pageloads": 1,
-            "total_clicks": 1
-        }
-    }
-]
-data = list(collection.aggregate(pipeline))
-
-# Prepare data for scatter plot
-cities = sorted(set(doc["City"] for doc in data))
-cities_data = {city: {"pageloads": [], "clicks": [], "userIDs": []} for city in cities}
-for doc in data:
-    city = doc["City"]
-    cities_data[city]["pageloads"].append(doc["total_pageloads"])
-    cities_data[city]["clicks"].append(doc["total_clicks"])
-    cities_data[city]["userIDs"].append(doc["userID"])
-
-# Define colors for cities (using Plotly qualitative colors)
-colors = [
-    "#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A", 
-    "#19D3F3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"
-]
-color_map = {city: colors[i % len(colors)] for i, city in enumerate(cities)}
-
-# Create scatter plot
-fig = go.Figure()
-
-for city in cities:
-    if cities_data[city]["pageloads"]:  # Only add traces with data
-        fig.add_trace(
-            go.Scatter(
-                x=cities_data[city]["pageloads"],
-                y=cities_data[city]["clicks"],
-                mode='markers',
-                name=city,
-                marker=dict(
-                    size=10,
-                    color=color_map[city],
-                    opacity=0.5,
-                    line=dict(width=0.5, color='black')
-                ),
-                text=cities_data[city]["userIDs"],
-                hovertemplate="User: %{text}<br>Pageloads: %{x}<br>Clicks: %{y}<extra></extra>"
-            )
-        )
-
-# Update layout
-fig.update_layout(
-    title='Pageloads vs Clicks by User in India (Color-Coded by City)',
-    xaxis_title='Total Pageloads',
-    yaxis_title='Total Clicks',
-    template='plotly_white',  # White background
-    xaxis=dict(range=[0, 1000]),  # X-axis limit
-    yaxis=dict(range=[0, 5000]),  # Y-axis limit
-    showlegend=True,
-    height=600
-)
-
-# Save and show the plot
-fig.write_html('india_pageloads_vs_clicks_scatter.html')
-fig.show()  # Display interactively
-```
-
-<p></p>
-
-{% include india_pageloads_vs_clicks_scatter.html %}
+{% top_5_country_pageloads_and_clicks.html %}
 
 
-Plotly is also capable of giving a very compelling map-based visual. Installing and using <code>pycountry</code> will help to provide it with the country code required, and we'll import the <code>math</code> module as well to create a logarithmic color-scale, due to the extreme skew toward India, which would occlude the ability to spot differences among other countries.
-
-```python
-import pycountry
-import math
-```
-
-<p></p>
-
-```python
-collection = db['users_weekly']
-
-# Aggregate data: sum pageloads and clicks per country
-pipeline = [
-    {
-        "$match": {
-            "Country": {"$exists": True, "$ne": None}
-        }
-    },
-    {
-        "$project": {
-            "Country": 1,
-            "pageloads": {"$objectToArray": "$pageloads"},
-            "clicks": {"$objectToArray": "$clicks"}
-        }
-    },
-    {
-        "$unwind": "$pageloads"
-    },
-    {
-        "$unwind": "$clicks"
-    },
-    {
-        "$group": {
-            "_id": "$Country",
-            "total_activity": {
-                "$sum": {"$add": ["$pageloads.v", "$clicks.v"]}
-            }
-        }
-    },
-    {
-        "$project": {
-            "_id": 0,
-            "Country": "$_id",
-            "total_activity": 1
-        }
-    }
-]
-data = list(collection.aggregate(pipeline))
-
-# Map country names to ISO 3-letter codes using pycountry
-country_code_map = {c.name: c.alpha_3 for c in pycountry.countries}
-# Manual overrides for common mismatches
-manual_map = {
-    "United States": "USA",
-    "United Kingdom": "GBR",
-    "South Korea": "KOR",
-    "Russia": "RUS"
-}
-country_code_map.update(manual_map)
-
-countries = []
-activity = []
-log_activity = []
-iso_codes = []
-
-for doc in data:
-    country = doc["Country"]
-    code = country_code_map.get(country)
-    if code:  # Only include countries with valid ISO codes
-        countries.append(country)
-        activity.append(doc["total_activity"])
-        log_activity.append(math.log2(doc["total_activity"] + 1))  # Log scale, +1 to handle zeros
-        iso_codes.append(code)
-
-# Create choropleth map
-fig = go.Figure(data=go.Choropleth(
-    locations=iso_codes,  # ISO 3-letter codes
-    z=log_activity,  # Log-transformed activity values
-    text=countries,  # Country names for hover
-    zmin=min(log_activity, default=0),
-    zmax=max(log_activity, default=1),
-    colorscale='Viridis',  # Color scale
-    autocolorscale=False,
-    marker_line_color='white',  # Country borders
-    marker_line_width=0.5,
-    colorbar_title='Log(Activity + 1)',
-    hovertemplate="%{text}<br>Activity: %{customdata}<extra></extra>",
-    customdata=activity  # Show original activity on hover
-))
-
-# Update layout
-fig.update_layout(
-    title='Total Activity (Pageloads + Clicks) by Country (Logarithmic Scale)',
-    template='plotly_white',  # White background
-    geo=dict(
-        showframe=False,
-        showcoastlines=True,
-        projection_type='equirectangular'
-    ),
-    height=600
-)
-
-# Save and show the plot
-fig.write_html('country_activity_map_log.html')
-fig.show()  # Display interactively
-```
-
-<p></p>
-
-
-{% include country_activity_map_log.html %}
-
-
-
+To take it a step further, we could look at conversion rates. It's clear they would be greater than 100%, in terms of clicks vs. pageloads (I assume because selecting a new product from within the current page counts as a click but not a pageload), but that doesn't necessarily mean they would be uninformative. You might consider creating a "non_users_weekly" collection, based on <code>webClientID</code> instead of <code>user.UserID</code>, and comparing their behavior to that of the signed up users. We also have information about device type, number of robots, etc., which has yet to be thoroughly explored. 
 
 
 
 # What's Next?
 
+My intention for the next MongoDB article, which may not be the very next one, is to use Latent Dirichlet Analysis upon some Reddit data for topic modeling, link up to a stream via the API, and test the veracity of predictions via accuracy, F1-score, etc.
+
+
 
 
 # References
 
-Mongo DB User Docs
+Mongo DB User Docs - General
 - <a href="https://www.mongodb.com/docs/">https://www.mongodb.com/docs/</a>
 
+Mongo DB User Docs - Aggregation Pipelines
+- <a href="https://www.mongodb.com/docs/manual/core/aggregation-pipeline/">https://www.mongodb.com/docs/manual/core/aggregation-pipeline/</a>
+
 Plotly User Docs
-- ...
+- <a href="https://plotly.com/python/">https://plotly.com/python/</a>
 
-
+-And admittedly, a recent subscription to Grok
 
 
