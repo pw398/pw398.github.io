@@ -1632,7 +1632,7 @@ fig.show()
 ```
 
 
-Flip to dark mode if you're not in it already (why wouldn't you be, it's so much cooler) to render the following plots properly.
+Flip to light mode to render the following plots if you don't see them. I'll see if I can fix that.
 
 
 {% include top_5_country_pageloads_and_clicks.html %}
