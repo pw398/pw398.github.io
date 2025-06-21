@@ -1635,7 +1635,7 @@ fig.show()
 Flip to dark mode if you're not in it already (why wouldn't you be, it's so much cooler) to render the following plots properly.
 
 
-
+{% include top_5_country_pageloads_and_clicks.html %}
 
 
 To take it a step further, we could look at conversion rates. It's clear they would be greater than 100%, in terms of clicks vs. pageloads (I assume because selecting a new product from within the current page counts as a click but not a pageload), but that doesn't necessarily mean they would be uninformative. You might consider creating a "non_users_weekly" collection, based on <code>webClientID</code> instead of <code>user.UserID</code>, and comparing their behavior to that of the signed up users. We also have information about device type, number of robots, etc., which has yet to be thoroughly explored. 
