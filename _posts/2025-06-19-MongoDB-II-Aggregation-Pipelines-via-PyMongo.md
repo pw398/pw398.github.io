@@ -14,8 +14,17 @@ In this article, we'll continue to work with the Kirana Store clickstream data, 
 
 # Outline
 
-1. ...
-2. ...
+1. Introduction
+2. The Kirana Store Clickstream Data
+3. MongoDB Aggregation Pipelines
+4. Import Libraries and Data
+5. Select DB and View Collections
+6. Data Exploration
+7. Classify Device Type (as Bot, Desktop, or Mobile)
+8. Export Flattened Data to CSV
+9. Create users_weekly Collecton
+10. Plot Summary Statistics
+11. What's Next?
 
 
 
@@ -51,7 +60,7 @@ The MongoDB/PyMongo Jupyter notebook is available <a href="https://github.com/pw
 
 
 
-# Aggregation Pipelines
+# MongoDB Aggregation Pipelines
 
 We refer to the stage-based framework of aggregation in MongoDB as aggregation pipelines, which analyze and transform data into filtered, aggregated, or calculated results. These stages include operations like:
 
@@ -625,7 +634,7 @@ print(f"Number of records with device_type == None: {count}")
 ```
 
 
-# Export a Checkpoint
+## Export a Checkpoint
 
 
 With all that work and all that waiting done, you may want to export the current state of the database to file, such that you can skip re-doing the <code>device_type</code> classification, if for some reason you decide to delete the database or collection. Unless you are working in an environment like Google Colab, your data should persist even if you close your session.
@@ -802,7 +811,7 @@ len(df)
 
 
 
-# Create <code>users_weekly</code> Table
+# Create <code>users_weekly</code> Collection
 
 We can see that a large number of documents (6.1M) have accrued only over a relatively short amount of time (3 weeks). It may be helpful to create a collection with aggregated, and perhaps filtered data to facilitate shorter run-time of queries for analytical purposes. It would be optimal to retain some level of date information, but we'll aggregate to the week level. I'll filter to only users with accounts as well, and to ensure consistency with the SQL operations at a country level, include a breakout by country. If we wanted to ensure consistent results at the city level as well, we would have to either break things out further, or ensure a consistent method of assigning only a single city per user.
 
