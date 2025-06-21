@@ -7,13 +7,11 @@ show_excerpts: true # set to true to show excerpts on the homepage
 
 # Minima date format
 # refer to http://shopify.github.io/liquid/filters/date/ if you want to customize this
-
 sass:
   sass_dir: _sass
-
 plainwhite:
   name: Patrick White
-  tagline: Analyst, Data Science Enthusiast
+  tagline: "Analyst,<br>Researcher,<br>Data Scientist"
   date_format: "%b %-d, %Y"
   sitemap: true # set to true to generate sitemap.xml content
   #search: true # set to true to enable searchbar
@@ -44,8 +42,11 @@ plainwhite:
   navigation:
     - title: Posts
       url: "/index"
+    - title: Certifications 
+      url: "/certifications"
     - title: Code Repository
-      url: "www.github.com/pw598"
+      url: "https://github.com/pw598/"
+
 
       
     # Mastodon instances
@@ -68,6 +69,8 @@ plugins:
 #  - jekyll-feed
 
 
-markdown: kramdown
-kramdown:
-  input: GFM
+header_pages:
+  - certifications.md
+
+include:
+  - certifications.md
