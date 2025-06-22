@@ -32,7 +32,7 @@ In this article, we'll continue to work with the Kirana Store clickstream data, 
 
 To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll narrow the focus to PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
 
-To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, it's clear what the issues were). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but although it is very impressive, recommendations toward complex operations often lacked precision or quality. Trickle-charging with step-by-step input, and modularizing code into attachments were productive strategies, though limitations are still noticeable, for the time being.
+To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, it's clear what the issues were). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but although it is very impressive, recommendations toward complex issues often lacked either precision or quality. Trickle-charging with step-by-step input, and modularizing code into attachments were productive strategies, though limitations were still bumped up against, as has historically been the case.
 
 
 
@@ -75,7 +75,7 @@ We refer to the stage-based framework of aggregation in MongoDB as aggregation p
 - <code>$addFields</code>: adds new fields to documents in the aggregation pipeline, preserving existing fields.
 - <code>$lookup</code>: performs a left outer join to another collection in the same database.
 
-See <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/">here</a> for the user docs on 'stages', and <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/"> for the user docs on 'operators'.
+For more, see <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/">here</a> for the user docs on 'stages', and <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/">here</a> for the user docs on 'operators'.
 
 
 
