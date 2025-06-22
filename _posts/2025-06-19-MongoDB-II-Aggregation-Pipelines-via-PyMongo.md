@@ -32,7 +32,7 @@ In this article, we'll continue to work with the Kirana Store clickstream data, 
 
 To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll narrow the focus to PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
 
-To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, it's clear what the issues were). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging it with step-by-step input, and modularizing code into attachments were productive strategies, but the limitations are still quite noticeable, for now.
+To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, it's clear what the issues were). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging it with step-by-step input, and modularizing code into attachments were productive strategies, though for now, limitations are still quite noticeable.
 
 
 
@@ -138,7 +138,7 @@ print(client.list_database_names())
 
 ## Import Data
 
-Next, we import the data from the <code>clicks.bson</code> and <code>clicks.metadata.json</code> files. The following cell is about setting variables to be used in the next cell below, and you can go ahead and skip to the next cell if hard-coding.
+Next, we import the data from the <code>clicks.bson</code> and <code>clicks.metadata.json</code> files. The following cell is about setting variables to be used in the next cell below, and you can go ahead and skip to the following cell if hard-coding.
 
 ```python
 HOST = "localhost"
@@ -153,7 +153,7 @@ collection_bson = BSON_FILE_NAME
 collection_json = JSON_FILE_NAME
 ```
 
-The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> command will result in any existing data from the same database and collection being cleared before the import,
+The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> command will result in any existing data from the same database and collection being cleared before the import.
 
 
 ```bash
@@ -222,7 +222,7 @@ collection.find_one()
 
 ## Count of Records
 
-Though the number of documents is mentioned upon import, we can also use the following command. To apply a signle filter, we would use something like <code>collection.count_documents({"user.City": "Colombo"})</code>, with either apostrophes or double-quotes being acceptable. In the Mongo shell, we would not have to encapsulate the keys and values with quotes or apostrophes.
+Though the number of documents is mentioned upon import, we can also use the following command. To apply a single filter, we would use something like <code>collection.count_documents({"user.City": "Colombo"})</code>, with either apostrophes or double-quotes being acceptable. For a double-filter, we would use something like <code>collection.count_documents({"user.City": "Colombo", "device.Browser": "Firefox"})</code>.
 
 
 ```python
@@ -813,7 +813,7 @@ len(df)
 
 # Create <code>users_weekly</code> Collection
 
-We can see that a large number of documents (6.1M) have accrued only over a relatively short amount of time (3 weeks). It may be helpful to create a collection with aggregated, and perhaps filtered data to facilitate shorter run-time of queries for analytical purposes. It would be optimal to retain some level of date information, but we'll aggregate to the week level. I'll filter to only users with accounts as well, and to ensure consistency with the SQL operations at a country level, include a breakout by country. If we wanted to ensure consistent results at the city level as well, we would have to either break things out further, or ensure a consistent method of assigning only a single city per user.
+We can see that a large number of documents (6.1M) have accrued only over a relatively short amount of time (3 weeks). It may be helpful to create a collection with aggregated, and perhaps filtered data to facilitate shorter run-time of queries for analytical purposes. It would be optimal to retain some level of date information, so we'll aggregate to the week level. I'll filter to only users with accounts as well, and to ensure consistency with the SQL operations at a country level, include a breakout by country. If we wanted to ensure consistent results at the city level as well, we would have to either break things out further, or ensure a consistent method of assigning only a single city per user.
 
 It will help, in terms of speed, to add an index to the <code>user.UserID</code> field. In MongoDB, it will be a sparse index, meaning it only applies to the minority of documents which contain that field. 
 
@@ -1148,7 +1148,7 @@ else:
 If you are following along in the SQL notebook, you will see that the results match.
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-1.png" style="height: 350px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-1.png" style="height: 75px; width:auto;">
 
 
 Breaking it out by country:
@@ -1218,7 +1218,7 @@ GROUP BY Country
 ORDER BY total_count DESC;
 ```
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-2.png" style="height: 350px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-2.png" style="height: 250px; width:auto;">
 
 
 ## Create a Checkpoint
@@ -1643,7 +1643,7 @@ Flip to light mode to render the following plots if you don't see them. Sorry, I
 {% include top_5_country_pageloads_and_clicks.html %}
 
 
-I don't mean to imply that working with the 6.1M-record data (minus those with null country values) is unmanageable. And with horizontal scaling, even a much larger number of records could be highly manageable. In the following two plots, we'll use the <code>clicks</code> collection (or the <code>clicks</code> table in SQL) to get activity data for users and non-users alike. The queries are quite simple, so I'll skip the extensive comments and SQL analogies. 
+I don't mean to imply that working with the 6.1M-record data (minus those with null country values) is unmanageable. And with horizontal scaling, even a much larger number of records could be highly manageable, but you'll see that despite using the <code>clicks</code> collection (or the <code>clicks</code> table in SQL) for the following two plots, to get activity data for users and non-users alike, the code runs quite quickly. The queries are simple, so I'll skip the extensive comments and SQL analogies. 
 
 In the first chart below, I'll show the total activity for India vs. all other (non-null) countries, broken out by <code>device_type</code>.
 
@@ -1725,6 +1725,8 @@ fig.update_layout(
 fig.write_html("india_vs_other_by_device_bar.html")
 fig.show()
 ```
+
+(Again, flip to light mode if not in it)
 
 
 {% include india_vs_other_by_device_bar.html %}
@@ -1856,6 +1858,8 @@ fig.update_layout(
 fig.write_html("country_count_map_log.html")
 fig.show()
 ```
+
+(Again, flip to light mode if not in it)
 
 
 {% include country_count_map_log.html %}
