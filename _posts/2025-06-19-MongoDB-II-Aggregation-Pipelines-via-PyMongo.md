@@ -32,7 +32,7 @@ In this article, we'll continue to work with the Kirana Store clickstream data, 
 
 To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll narrow the focus to PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
 
-To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, it's clear what the issues were). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging it with step-by-step input, and modularizing code into attachments were productive strategies, though for now, limitations are still quite noticeable.
+To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, it's clear what the issues were). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging it with step-by-step input, and modularizing code into attachments were productive strategies, though limitations are still noticeable, for the time being.
 
 
 
@@ -1148,7 +1148,7 @@ else:
 If you are following along in the SQL notebook, you will see that the results match.
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-1.png" style="height: 75px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-1.png" style="height: 60px; width:auto;">
 
 
 Breaking it out by country:
@@ -1255,15 +1255,15 @@ In MySQL, using Bash:
 
 # Plot Summary Statistics
 
-We could do something similar based on <code>webClientID</code> for the 'non-users', though the operations would take significantly longer, but I feel the need to start wrapping it up. What we'll do below is create a 2 x 1 subplot of charts, with the first breaking out activity type by country, for the top 5 countries (though you can easily adjust that number), and the bottom plotting clicks vs. pageloads by user for those countries, with the dots being color-coded.
+We could do something similar based on <code>webClientID</code> for the 'non-users', though without horizontal scaling, the operations would take fairly long, and I would like to avoid getting too repetitive. What we'll do below is create a 2 x 1 subplot of charts, with the first breaking out activity type by country, for the top 5 countries (though you can easily adjust that number), and the bottom plotting clicks vs. pageloads by user for those countries, with the dots being color-coded by country.
 
-Pretty much all of the aggregation pipeline operators mentioned above will be used in the functions for aggregating data from the <code>users_weekly</code> collection, and I'll leave it largely to the extensive comments below to explain the code. But if you're like me, what's most illustrative are the SQL analogies, which I'll lay out first.
+Pretty much all of the aggregation pipeline operators mentioned above will be used in the functions for aggregating data from the <code>users_weekly</code> collection, and I'll leave it largely to the extensive comments below to explain the code. If you're like me, what's most illustrative are the SQL analogies, which I'll lay out first.
 
 
 
 ### The <code>fetch_top_countries</code> Function
 
-The <code>fetch_top_countries(n)</code> function is used to first determine which countries to show. The criteria is the amount of total activity (pageloads plus clicks), and <code>n</code> is obviously the number of countries to select, with the total activity sorted in descending order.
+The <code>fetch_top_countries(n)</code> function is used to first determine which countries to show. The criteria is the amount of total activity (pageloads plus clicks), and <code>n</code> is obviously the number of countries to select, sorted in descending order by activity.
 
 ```python
 def fetch_top_countries(n):
@@ -1287,6 +1287,8 @@ def fetch_top_countries(n):
 ```
 ```python
     """
+```
+```python
     return pd.read_sql(query_top_countries, engine)['Country'].tolist()
 ```
 
@@ -1637,7 +1639,7 @@ fig.show()
 ```
 
 
-Flip to light mode to render the following plots if you don't see them. Sorry, I'll try to fix that.
+Flip to light mode to render the following plots if you don't see them (sorry, working on it).
 
 
 {% include top_5_country_pageloads_and_clicks.html %}
@@ -1865,7 +1867,7 @@ fig.show()
 {% include country_count_map_log.html %}
 
 
-To take it a step further, we could look at conversion rates. They are clearly going to be often greater than 100%, in terms of clicks as a proportion of pageloads (I assume navigating directly to a product counts as a click but not a pageload), but that doesn't necessarily make them uninformative. We could also analyze the behavior of those with an account vs. 'non-users', perhaps by creating an aggregated table for the non-users as well.
+To take it a step further, we could look at conversion rates. They are clearly going to be often greater than 100%, in terms of clicks as a proportion of pageloads (I assume navigating directly to a product counts as a click but not a pageload), but that doesn't necessarily make them uninformative. We could also analyze the behavior of those with an account vs. 'non-users', perhaps creating an aggregated table for the non-users as well.
 
 
 # What's Next?
