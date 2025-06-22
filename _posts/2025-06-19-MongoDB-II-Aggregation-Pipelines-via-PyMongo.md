@@ -5,7 +5,7 @@ date:   2025-06-19 00:00:00 +0000
 categories: MongoDB SQL Python
 ---
 
-In this article, we'll continue to work with the Kirana Store clickstream data, aggregating to a 'warehouse' collection and performing some analytics. I started with the intent to include some SQL-analogies, but ended up providing a full companion notebook to make the Mongo code more relatable.
+In this article, we'll continue to work with the Kirana Store clickstream data, creating an aggregated collection with fewer records, and performing some analytics. I started with the intent to include some SQL-analogies, and ended up providing a full companion notebook to make the Mongo code more relatable.
 
 
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2.png" style="height: 350px; width:auto;">
@@ -20,9 +20,9 @@ In this article, we'll continue to work with the Kirana Store clickstream data, 
 4. Import Libraries and Data
 5. Select DB and View Collections
 6. Data Exploration
-7. Classify Device Type (as Bot, Desktop, or Mobile)
+7. Classify Device Type (Bot, Desktop, or Mobile)
 8. Export Flattened Data to CSV
-9. Create users_weekly Collecton
+9. Create <code>users_weekly</code> Collecton
 10. Plot Summary Statistics
 11. What's Next?
 
@@ -30,9 +30,9 @@ In this article, we'll continue to work with the Kirana Store clickstream data, 
 
 # Introduction
 
-To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll focus on PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
+To briefly recap, the last article included the basics of operating MongoDB through the Mongo shell, Bash, or Python (PyMongo), such as for basic queries and CRUD operations. Because this article is a little more involved, we'll narrow the focus to PyMongo, though as I mentioned above, an SQL notebook (using Google Colab) is provided as a companion piece. For myself at least, this makes the PyMongo code a lot more relatable.
 
-To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, the nature of the issues is much clearer). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging with input, and modularizing code into attachments were productive strategies, but its limitations are (for now) still quite noticeable.
+To be honest, it took quite a bit of troubleshooting to get matching results in SQL (though of course in hindsight, it's clear what the issues were). Flattening the data was relatively straightforward, as there aren't many layers of nesting in the clickstream data. Matching top-line results, user-level results, and country-level results was more of a process. AI assistance (from Grok) was helpful, but recommendations often lacked precision. Trickle-charging it with step-by-step input, and modularizing code into attachments were productive strategies, but the limitations are still quite noticeable, for now.
 
 
 
@@ -56,7 +56,7 @@ It's also the case with unstructured data that the fields above may not exist fo
 
 The dataset is available here, in a .zip file <a href="https://drive.google.com/file/d/1ZRrNKa9sBtyRi1jZ5ocFMrcuuY_erVYH/view?usp=drive_link">on Google Drive</a>.
 
-The MongoDB/PyMongo Jupyter notebook is available <a href="https://github.com/pw598/Articles/blob/main/MongoDB-II-Aggregation-Pipelines.ipynb">here</a>, and the MySQL companion piece, which uses a Google Colab notebook (for replicability) is located <a href="https://github.com/pw598/Articles/blob/main/MySQL-Companion-to-MongoDB-II-Aggregation-Pipelines.ipynb">here</a>.
+The PyMongo Jupyter notebook is available <a href="https://github.com/pw598/Articles/blob/main/MongoDB-II-Aggregation-Pipelines.ipynb">here</a>, and the MySQL companion piece, which uses a Google Colab notebook (for replicability) is located <a href="https://github.com/pw598/Articles/blob/main/MySQL-Companion-to-MongoDB-II-Aggregation-Pipelines.ipynb">here</a>.
 
 
 
@@ -64,16 +64,16 @@ The MongoDB/PyMongo Jupyter notebook is available <a href="https://github.com/pw
 
 We refer to the stage-based framework of aggregation in MongoDB as aggregation pipelines, which analyze and transform data into filtered, aggregated, or calculated results. These stages include operations like:
 
-- $match: ...
-- $sum: ...
-- $count
-- $group
-- $project
-- $sort
-- $limit
-- $unwind
-- $addFields
-- $lookup
+- <code>$match:</code>: filters the document stream to allow only matching documents.
+- <code>$sum:</code>: self-explanatory.
+- <code>$count</code>: count of documents in the stream.
+- <code>$group</code>: ...
+- <code>$project</code>: reshapes each document in the stram, such as by adding new fields or removing existing fields.
+- <code>$sort</code>: sort the documents in the stream.
+- <code>$limit</code>: ...
+- <code>$unwind</code>: deconstructs an array field from the input documents to output a document for each element.
+- <code>$addFields</code>: ...
+- <code>$lookup</code>: performs a left outer join to another collection in the same database.
 
 **link**
 
@@ -107,7 +107,7 @@ from plotly.subplots import make_subplots
 
 ## Establish a MongoDB Connection
 
-Next, establish a connection to a MongoDB instance, and print the list of databases currently in existence.
+Next, we establish a connection to a MongoDB instance, and print the list of databases currently in existence.
 
 
 ```python
@@ -153,7 +153,7 @@ collection_bson = BSON_FILE_NAME
 collection_json = JSON_FILE_NAME
 ```
 
-The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> element will result in any existing data from the same database and collection being cleared before the import,
+The following shell commands, facilitated in Jupyter notebook via the preceding exclamation mark, will import the data from file, so long as you have the Mongo tools package (referenced in the prior article) installed. The <code>--drop</code> command will result in any existing data from the same database and collection being cleared before the import,
 
 
 ```bash
@@ -239,7 +239,7 @@ collection.count_documents({})
 ## Get Date Range
 
 
-<p>To get the range of dates in the data, we can use something like the following. This is our first pipeline (in this article), in which the <code>$group</code> operator is used to aggregate documents. Setting <code>_id</code> to <code>None</code> effectively removes any grouping by specific field values and treats the entire collection as one group. Within this group, we compute the earliest and latest values of the <code>VisitDateTime</code>.</p>
+<p>To get the range of dates in the data, we can use something like the following. This is our first pipeline, in which the <code>$group</code> operator is used to aggregate documents. Setting <code>_id</code> to <code>None</code> effectively removes any grouping by specific field values, and treats the entire collection as one group. Within this group, we compute the earliest and latest values of the <code>VisitDateTime</code>.</p>
 
 
 ```python
@@ -326,7 +326,7 @@ len(result)
 # 36791
 ```
 
-Clearly a small proportion of visitors have an account. The SQL analog to the above would be as follows.
+Clearly, only a small proportion of visitors have an account. The SQL analog to the above would be as follows.
 
 
 ```sql
@@ -372,10 +372,10 @@ FROM clicks;
 
 # Classify Device Type as Bot, Desktop, or Mobile
 
-## Distinct Values for <code>device.OS</code>
-
-
 Let's suppose we are interested in understanding our customers' device-related preferences or behavior. For this, we can utilize the nested <code>device.OS</code> and <code>device.Browser</code> fields. The operating systems are a good indicator of whether a user is on a mobile or desktop device, and the browsers may offer a clear indication of whether a visitor is a robot. I relied on AI to make the classifications, so forgive any technical inaccuracies, but we will use the logic that a visitor is a robot if the browser indicates so, and this classification will take precedence over distinctions in operating system. If not a robot, we will classify the visitor as either desktop or mobile based on operating system, and label each document accordingly by adding a field called <code>device_type</code>.
+
+
+## Distinct Values for <code>device.OS</code>
 
 To get the list of unique operating systems, we can use the <code>distinct</code> keyword as follows. The second line simply provides the output as a horizontal list to save space.
 
@@ -543,7 +543,7 @@ print(f"Execution time: {execution_time:.0f} seconds")
 ```
 
 
-The above PyMongo code used <code>update_one</code> to make reporting progress easier, but a bulk-write method is also available, and we could even weave in some progress tracking, such as the following (somewhat confusingly, it does leverage a PyMongo function called <code>UpdateOne</code>).
+The above PyMongo code used <code>update_one</code> to make reporting progress easier, but a bulk-write method is also available, and we could even weave in some progress tracking, such as the following (somewhat confusingly, the below will leverage a PyMongo function called <code>UpdateOne</code>).
 
 
 ```python
@@ -697,7 +697,7 @@ collection_json = JSON_FILE_NAME
 !mongoimport --host {HOST}:{PORT} --db {DBNAME} --collection {collection_json} --drop --type json "{json_file}"
 ```
 
-The MySQL via Bash analog would be soemthing like the following.
+The MySQL via Bash analog would be something like the following.
 
 
 ```bash
@@ -715,7 +715,7 @@ The MySQL via Bash analog would be soemthing like the following.
 
 # Export Flattened Data to CSV
 
-It's a very conceivable use-case that we may want to bring data from an unstructured MongoDB database, such as used in the early stages of analysis in a data lake, into a structured SQL data warehouse with enforcable schema, normalizing entity relationships, etc. Below, we will 'flatten' the data such that nested fields are brought out of their hierarchy, and assigned null values in the places where the data do not exist. The MySQL Colab notebook linked to above, after some library installations and imports, will import this flattened data, and provide query analogies to illuminate our understanding of the increasingly complex MongoDB queries and operations below. This flattening and export operation is performed using pandas, after exporting the data as a list from the MongoDB collection.
+It's a very conceivable use-case that we may want to bring data from an unstructured MongoDB database, such as used in the early stages of analysis in a data lake, into a structured SQL data warehouse with enforcable schema, normalizing entity relationships, etc. Below, we will 'flatten' the data such that nested fields are brought out of their hierarchy, and assigned null values in the places where the data do not exist. The MySQL Colab notebook linked to above, after some library installations and imports, will import this flattened data, and provide query analogies to illuminate our understanding of the increasingly complex MongoDB operations. This flattening and export operation is performed using pandas, after exporting the data as a list from the MongoDB collection.
 
 
 ```python
@@ -796,7 +796,7 @@ FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_NAME = 'clicks';
 ```
 
-As a sanity check, we'll count the records in the pandas dataframe exported to CSV, expecting 6.1M, as with the .bson data originally imported.
+As a sanity check, we'll count the records in the pandas dataframe exported to CSV, expecting 6.1M, as with the <code>.bson</code> data originally imported.
 
 ```python
 df = pd.DataFrame(pd.read_csv('clicks_structured.csv'))
@@ -1148,7 +1148,7 @@ else:
 If you are following along in the SQL notebook, you will see that the results match.
 
 
-**sql result img**
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-1.png" style="height: 350px; width:auto;">
 
 
 Breaking it out by country:
@@ -1218,7 +1218,7 @@ GROUP BY Country
 ORDER BY total_count DESC;
 ```
 
-**sql result img**
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mg2-2.png" style="height: 350px; width:auto;">
 
 
 ## Create a Checkpoint
@@ -1257,7 +1257,7 @@ In MySQL, using Bash:
 
 We could do something similar based on <code>webClientID</code> for the 'non-users', though the operations would take significantly longer, but I feel the need to start wrapping it up. What we'll do below is create a 2 x 1 subplot of charts, with the first breaking out activity type by country, for the top 5 countries (though you can easily adjust that number), and the bottom plotting clicks vs. pageloads by user for those countries, with the dots being color-coded.
 
-Pretty much all of the aggregation pipeline operators mentioned above will be used in the functions for aggregating data from the <code>users_weekly</code> collection, and I'll leave it largely to the extensive comments to explain the code. But if you're like me, what's most illustrative are the SQL analogies, which I'll lay out first.
+Pretty much all of the aggregation pipeline operators mentioned above will be used in the functions for aggregating data from the <code>users_weekly</code> collection, and I'll leave it largely to the extensive comments below to explain the code. But if you're like me, what's most illustrative are the SQL analogies, which I'll lay out first.
 
 
 
@@ -1272,7 +1272,12 @@ def fetch_top_countries(n):
 ```sql
     SELECT Country
     FROM (
-        SELECT Country, SUM(pageloads_mobile + pageloads_desktop + pageloads_bot + clicks_mobile + clicks_desktop + clicks_bot) as total_count
+        SELECT Country, SUM(pageloads_mobile + 
+                            pageloads_desktop + 
+                            pageloads_bot + 
+                            clicks_mobile + 
+                            clicks_desktop + 
+                            clicks_bot) as total_count
         FROM users_weekly
         WHERE Country IS NOT NULL AND Country != 'Null'
         GROUP BY Country
@@ -1632,20 +1637,236 @@ fig.show()
 ```
 
 
-Flip to light mode to render the following plots if you don't see them. I'll see if I can fix that.
+Flip to light mode to render the following plots if you don't see them. Sorry, I'll try to fix that.
 
 
 {% include top_5_country_pageloads_and_clicks.html %}
 
 
-To take it a step further, we could look at conversion rates. It's clear they would be greater than 100%, in terms of clicks vs. pageloads (I assume because selecting a new product from within the current page counts as a click but not a pageload), but that doesn't necessarily mean they would be uninformative. You might consider creating a "non_users_weekly" collection, based on <code>webClientID</code> instead of <code>user.UserID</code>, and comparing their behavior to that of the signed up users. We also have information about device type, number of robots, etc., which has yet to be thoroughly explored. 
+I don't mean to imply that working with the 6.1M-record data (minus those with null country values) is unmanageable. And with horizontal scaling, even a much larger number of records could be highly manageable. In the following two plots, we'll use the <code>clicks</code> collection (or the <code>clicks</code> table in SQL) to get activity data for users and non-users alike. The queries are quite simple, so I'll skip the extensive comments and SQL analogies. 
 
+In the first chart below, I'll show the total activity for India vs. all other (non-null) countries, broken out by <code>device_type</code>.
+
+
+```python
+collection = db["clicks"]
+
+# Aggregate data
+pipeline = [
+    {"$match": {
+        "user.Country": {"$ne": None, "$ne": "", "$exists": True},
+        "device_type": {"$in": ["desktop", "mobile", "bot"]}
+    }},
+    {"$group": {
+        "_id": {
+            "device": "$device_type",
+            "category": {"$cond": [{"$eq": ["$user.Country", "India"]}, "India", "Other"]}
+        },
+        "count": {"$sum": 1}
+    }}
+]
+data = list(collection.aggregate(pipeline))
+
+# Process data
+device_types = ["desktop", "mobile", "bot"]
+plot_data = {device: {"India": 0, "Other": 0} for device in device_types}
+
+for item in data:
+    device = item["_id"]["device"]
+    category = item["_id"]["category"]
+    count = item["count"]
+    plot_data[device][category] = count
+
+# Prepare bar plot data
+india_counts = [plot_data[device]["India"] for device in device_types]
+other_counts = [plot_data[device]["Other"] for device in device_types]
+x_positions = [0, 1, 2]
+
+# Create bar plot
+fig = go.Figure(data=[
+    go.Bar(
+        x=x_positions,
+        y=india_counts,
+        name="India",
+        text=india_counts,
+        textposition="auto",
+        marker_color="#1f77b4",
+        offset=-0.2,
+        width=0.4
+    ),
+    go.Bar(
+        x=x_positions,
+        y=other_counts,
+        name="Other",
+        text=other_counts,
+        textposition="auto",
+        marker_color="#ff7f0e",
+        offset=0.2,
+        width=0.4
+    )
+])
+
+# Update layout
+fig.update_layout(
+    title="Record Count: India vs Other Countries by Device Type",
+    xaxis=dict(
+        title="Device Type",
+        tickvals=x_positions,
+        ticktext=device_types
+    ),
+    yaxis_title="Number of Records",
+    barmode="group",
+    template="plotly_white",
+    height=500,
+    legend=dict(x=0.85, y=1.0)
+)
+
+# Save and show
+fig.write_html("india_vs_other_by_device_bar.html")
+fig.show()
+```
+
+
+{% include india_vs_other_by_device_bar.html %}
+
+
+Interestingly, with regard to desktop visitation, the sum of other countries are more prominent, but for mobile visitation, India is more prominent. We can see that bot visitation is also greater for the sum of other countries, but that overall, it accounts for a low proportion of total visits.
+
+Finally, we'll create a map-based visual, which with Plotly, you can zoom in and out of, plus drag in all 4 directions. I'll make the following design choices:
+
+1. Include a dropdown-list filter for <code>device_type</code>.
+2. Have the colormap reset each time a new option is chosen from the filter, to be relative only to the countries currently showing.
+2. Omit India to avoid occlusion.
+3. Use a logarithm-based colormap to avoid occlusion (due to a large amount of activity from the United States).
+
+
+```python
+# install pycountry to get abbreviations necessary for plotting
+# !pip install pycountry
+```
+
+<p></p>
+
+```python
+import pycountry
+import math
+
+collection = db["clicks"]
+
+# Aggregate data
+pipeline = [
+    {"$match": {
+        "user.Country": {"$ne": None, "$ne": "", "$ne": "India", "$exists": True},
+        "device_type": {"$ne": None, "$exists": True}
+    }},
+    {"$group": {"_id": {"country": "$user.Country", "device": "$device_type"}, "count": {"$sum": 1}}},
+]
+data = list(collection.aggregate(pipeline))
+
+# Map country names to ISO 3-letter codes
+country_code_map = {c.name: c.alpha_3 for c in pycountry.countries}
+manual_map = {
+    "United States": "USA",
+    "United Kingdom": "GBR",
+    "South Korea": "KOR",
+    "Russia": "RUS",
+    "Hashemite Kingdom of Jordan": "JOR",
+    "Republic of Korea": "KOR",
+    "Republic of Lithuania": "LTU",
+    "Republic of Moldova": "MDA",
+    "Republic of the Congo": "COG",
+    "Democratic Republic of Timor-Leste": "TLS",
+    "Bonaire, Sint Eustatius, and Saba": "BES",
+}
+country_code_map.update(manual_map)
+
+# Process data
+device_types = set(item["_id"]["device"] for item in data)
+plot_data = {device: {"countries": [], "counts": [], "log_counts": [], "iso_codes": []} for device in device_types}
+
+for item in data:
+    country = item["_id"]["country"]
+    device = item["_id"]["device"]
+    count = item["count"]
+    log_count = math.log2(count + 1)  # Log scale
+    code = country_code_map.get(country)
+    if code:
+        plot_data[device]["countries"].append(country)
+        plot_data[device]["counts"].append(count)
+        plot_data[device]["log_counts"].append(log_count)
+        plot_data[device]["iso_codes"].append(code)
+
+# Create figure
+fig = go.Figure()
+
+# Add choropleth for the first device type
+default_device = list(device_types)[0]
+fig.add_choropleth(
+    locations=plot_data[default_device]["iso_codes"],
+    z=plot_data[default_device]["log_counts"],
+    text=plot_data[default_device]["countries"],
+    customdata=plot_data[default_device]["counts"],
+    colorscale="Viridis",
+    zmin=min(plot_data[default_device]["log_counts"] or [0]),
+    zmax=max(plot_data[default_device]["log_counts"] or [1]),
+    marker_line_color="white",
+    marker_line_width=0.5,
+    colorbar_title="Log(Count + 1)",
+    hovertemplate="%{text}<br>Count: %{customdata}<extra></extra>",
+)
+
+# Update layout with dropdown
+fig.update_layout(
+    title=f"Record Count by Country (Device: {default_device})",
+    template="plotly_white",
+    geo=dict(
+        showframe=False,
+        showcoastlines=True,
+        projection_type="equirectangular"
+    ),
+    height=600,
+    updatemenus=[
+        dict(
+            buttons=[
+                dict(
+                    args=[{
+                        "locations": [plot_data[device]["iso_codes"]],
+                        "z": [plot_data[device]["log_counts"]],
+                        "text": [plot_data[device]["countries"]],
+                        "customdata": [plot_data[device]["counts"]],
+                        "zmin": [min(plot_data[device]["log_counts"] or [0])],
+                        "zmax": [max(plot_data[device]["log_counts"] or [1])],
+                        "title.text": f"Record Count by Country (Device: {device}, Log Scale)"
+                    }],
+                    label=device,
+                    method="update"
+                ) for device in device_types
+            ],
+            direction="down",
+            showactive=True,
+            x=0.1,
+            xanchor="left",
+            y=1.1,
+            yanchor="top"
+        )
+    ]
+)
+
+# Save and show
+fig.write_html("country_count_map_log.html")
+fig.show()
+```
+
+
+{% include country_count_map_log.html %}
+
+
+To take it a step further, we could look at conversion rates. They are clearly going to be often greater than 100%, in terms of clicks as a proportion of pageloads (I assume navigating directly to a product counts as a click but not a pageload), but that doesn't necessarily make them uninformative. We could also analyze the behavior of those with an account vs. 'non-users', perhaps by creating an aggregated table for the non-users as well.
 
 
 # What's Next?
 
-My intention for the next MongoDB article, which may or may not be the very next one, is to use Latent Dirichlet Analysis upon some Reddit data for topic modeling, link up to a stream via the API, and test the veracity of predictions via accuracy, F1-score, etc.
-
+My intention for the next MongoDB article, which may or may not be the next one in general, is to use Latent Dirichlet Allocation upon some Reddit data for topic modeling, link up to a stream via the API, and test the veracity of predictions via accuracy, F1-score, etc.
 
 
 
@@ -1656,6 +1877,9 @@ Mongo DB User Docs - General
 
 Mongo DB User Docs - Aggregation Pipelines
 - <a href="https://www.mongodb.com/docs/manual/core/aggregation-pipeline/">https://www.mongodb.com/docs/manual/core/aggregation-pipeline/</a>
+
+MongoDB to SQL Cheatsheet
+- <a href="https://www.mongodb.com/docs/manual/reference/sql-aggregation-comparison/">https://www.mongodb.com/docs/manual/reference/sql-aggregation-comparison/</a>
 
 Plotly User Docs
 - <a href="https://plotly.com/python/">https://plotly.com/python/</a>
