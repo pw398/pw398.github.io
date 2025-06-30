@@ -1,3 +1,10 @@
+---
+layout: post
+title:  "MongoDB II: Aggregation Pipelines with PyMongo"
+date:   2025-06-21 00:00:00 +0000
+categories: MongoDB SQL Python
+---
+
 
 ```markdown
 To install Hadoop and set up HDFS locally on your Windows machine using WSL, the following steps were successfully executed after troubleshooting. These steps assume a clean setup in WSL’s Linux environment (Ubuntu) with the user `patwh`. Commands that resulted in errors are excluded, and troubleshooting tips for major steps are provided.
