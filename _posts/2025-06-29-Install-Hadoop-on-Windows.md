@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  "MongoDB II: Aggregation Pipelines with PyMongo"
-date:   2025-06-21 00:00:00 +0000
-categories: MongoDB SQL Python
+title:  "Install Hadoop on Windows"
+date:   2025-06-29 00:00:00 +0000
+categories: Hadoop
 ---
 
 
