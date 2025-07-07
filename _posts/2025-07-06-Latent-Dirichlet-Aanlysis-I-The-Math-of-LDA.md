@@ -113,7 +113,7 @@ Next, we'll step it up to a mixture model, which involves a combination of multi
 
 In this case, the probability of a document observing a specific bag-of-words is as follows:
 
-$p(x) = \sum_z p(z) \prod_{j=1}^D p(x_j | z)$
+<p>$p(x) = \sum_z p(z) \prod_{j=1}^D p(x_j | z)$</p>
 
 And we would represent this in pseudocode like the following:
 
