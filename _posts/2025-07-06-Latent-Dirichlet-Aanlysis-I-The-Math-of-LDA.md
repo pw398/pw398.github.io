@@ -48,7 +48,7 @@ To obtain distributions rather than crisp predictions, we need to follow a gener
 
 # The Dirichlet Distribution
 
-Recall that the Beta distribution is dubbed the probability distribution for probabilities, because its values (and not just the associated probabilities) take on the range of 0 to 1. The Beta is a special case of the Dirichlet where $K$, the number of categories, is equal to 2. The Dirichlet is an abstraction of the Beta, dubbed a "distribution over distributions", specifically with regard to categorical (Multinomial) data, as it obeys 'the simplex constraint' of generating probability vectors that sum to 1 for any discrete number of categories.
+Recall that the Beta distribution is dubbed the probability distribution for probabilities, because its values (and not just the associated probabilities) take on the range of $0$ to $1$. The Beta is a special case of the Dirichlet where $K$, the number of categories, is equal to $2$. The Dirichlet is an abstraction of the Beta, dubbed a "distribution over distributions", specifically with regard to categorical (Multinomial) data, as it obeys 'the simplex constraint' of generating probability vectors that sum to $1$ for any discrete number of categories.
 
 For the mathematically inclined, the probability distribution/mass functions for the above-mentioned distributions are as follows. There is further explanation below, in case (like me) you find it difficult to extract intuition from mathematical symbols alone.
 
@@ -58,7 +58,7 @@ For the mathematically inclined, the probability distribution/mass functions for
 
 **formula for Dirichlet**
 
-If you read my **second article on probability distributions**, you may have noticed that the Dirichlet is the only one not visualized, and this is due to the abstract nature of how it would be visualized. It can be characterized as a simplex, meaning we can visualize it as a line in 1D space, a triangle in 2D space, and a tetrahedron in 3D space. But that just raises additional questions, doesn't it? Below, I use the 'stick-breaking' analogy to help illustrate, though we can also relate it to a heatmap or subplot of LDA results, with rows and columns representing discrete words and topics (or vice versa), as done further below.
+If you have read my <a href="">first article</a> on continuous probability distributions (the second on distributions in, you may have noticed that the Dirichlet is the only one not visualized, and this is due to the nature of how requiring some additional explanation. It can be characterized as a <a href="">simplex</a>, which is the simplest possible polytope in any given dimension, with polytope being a geometric object with flat sides. A simplex can be visualized as a line in 1D space, a triangle in 2D space, and a tetrahedron in 3D space. Below, I use the 'stick-breaking' analogy to illustrate, though we can also relate it to a heatmap or subplot of LDA results (with rows and columns representing discrete words and topics), as will be done near the end of this article.
 
 
 ## The Stick-Breaking Analogy
