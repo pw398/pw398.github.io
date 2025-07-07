@@ -21,11 +21,11 @@ intro...
 
 # Introduction
 
-Latent Dirichlet Allocation (LDA), introduced in a 2003 paper, is a soft-clustering method widely used for topic modeling of text documents in a corpus, with applications extending to other domains.
+Latent Dirichlet Allocation (LDA), introduced in <a href="">this 2003 paper</a>, is a clustering method, widely used for the topic modeling of text documents in a corpus, with applications extending to other domains.
 
 As a quick sidenote, it is unrelated to Linear Discriminant Analysis, a dimension-reduction technique which shares the acronym LDA.
 
-Latent Dirichlet Allocation is an unsupervised learning method, meaning topic-labels for the documents are not provided during training, nor specified by the model. Instead, we provide the number of topics $K$, and expect the analysis to group and distinguish documents in a meaningful way (if not, try adjusting $K$). It is possible to transform the process into one which allows us to make predictions in a more supervised way (called sLDA), and we'll explore that in the next article.
+Latent Dirichlet Allocation is an unsupervised learning method, meaning topic-labels for the documents are not provided during training, nor produced by the model. Instead, we provide the number of topics $K$, and expect the analysis to group and distinguish documents in a meaningful way (if not, try adjusting $K$). It is possible to transform the process into one which allows us to make predictions in a more supervised way (called sLDA), and we'll explore that in the next article.
 
 
 
@@ -36,10 +36,11 @@ LDA is a soft-clustering method, facilitating flexible, overlapping topic assign
 - A probability distribution over topics to each document.
   - e.g., a document is 40% represented by fiction, 20% by science, and so on with regard to other topics.
 
+</br>
 - A probability distribution over words to each topic.
   - e.g., a topic is represented 10% by "spaceship", 5% by "plasma", and so on with regard to other words (perhaps thousands of them).
 
-Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You need to sort them into sections, but don't know the categorizations beforehand. The books are documents, the unknown categorizations are topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", we would categorize them into a section which, to a large degree, represents the "science", but while it predominantly belongs to that latent category, it belongs to many others with smaller (perhaps much smaller) probability.
+Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You - more specifically, an algorithm you create, need to sort them into sections, but you do not know which categorizations exist beforehand. The books are our documents, the unknown categorizations are our topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", it would likely be categorized into a section which latently represents science. However, while it may predominantly belong to that category, in terms of probability, it belongs to many others with low, and for some, very low, probability.
 
 To obtain distributions rather than crisp predictions, we need to follow a generative, Bayesian process, iteratively refining expectations. The term 'latent' refers to the fact that we are uncovering hidden structure, and 'Dirichlet' refers to the Dirichlet distribution, described below. 
 
