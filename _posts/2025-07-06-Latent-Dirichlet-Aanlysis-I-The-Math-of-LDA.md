@@ -149,7 +149,7 @@ To explain:
 
 The probability of a document is:
 
-$p(x) = \int_\theta p(\theta | \alpha) \sum_z p(z | \theta) \prod_{j=1}^D p(x_j | z, \beta) d\theta$
+<p>$p(x) = \int_\theta p(\theta | \alpha) \sum_z p(z | \theta) \prod_{j=1}^D p(x_j | z, \beta) d\theta$</p>
 
 
 The pseudocode:
