@@ -25,7 +25,7 @@ Latent Dirichlet Allocation (LDA), introduced in <a href="">this 2003 paper</a>,
 
 As a quick sidenote, it is unrelated to Linear Discriminant Analysis, a dimension-reduction technique which shares the acronym LDA.
 
-Latent Dirichlet Allocation is an unsupervised learning method, meaning topic-labels for the documents are not provided during training, nor produced by the model. Instead, we provide the number of topics $K$, and expect the analysis to group and distinguish documents in a meaningful way (if that fails, adjust $K$ or review your preprocessing tactics). By injecting some human interaction, we can utilize a process by which we make predictions in a supervised way (called sLDA), and we'll explore that in the next article.
+Latent Dirichlet Allocation is an unsupervised learning method, meaning topic-labels for the documents are not provided during training, nor produced by the model. Instead, we provide the number of topics $K$, and expect the analysis to group and distinguish documents in a meaningful way (if that fails, adjust $K$ or review your training and preprocessing tactics). By injecting some human interaction, we can utilize a process by which we make predictions in a supervised way (called sLDA), and we'll explore that in the next article.
 
 
 
@@ -39,17 +39,17 @@ LDA is a soft-clustering method, facilitating overlapping topic assignments. Rat
 - A probability distribution over words to each topic.
   - e.g., a topic is represented 5% by "quantum", 2% by "teleport", and so on with regard to other words (perhaps thousands of them).
 
-Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You need to create an algorithm to sort them into sections, but you do not know which categorizations exist beforehand. The books are our documents, the unknown categorizations are our topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", the latent category corresponding to 'science' may be the one it predominantly belongs to; however, it will also belong many other categories with smaller probability (for many, much smaller), due to the fact that many words in our vocabular transcend particular categories.
+Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You need to create an algorithm to sort them into sections, but you do not know which categorizations exist beforehand. The books are our documents, the unknown categorizations are our topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", the latent category corresponding to 'science' may be the one it predominantly belongs to; however, it will also belong many other categories with smaller (often much smaller) probability, due to the fact that many words in our vocabulary transcend a particular subject.
 
-To obtain distributions rather than crisp predictions, we need to follow a generative, Bayesian process, iteratively refining expectations. The term 'latent' refers to the fact that we are uncovering hidden structure, and 'Dirichlet' refers to the Dirichlet distribution, described below. 
+To obtain distributions rather than crisp predictions, we typically follow a generative, Bayesian process, iteratively refining expectations through sampling (though alternative methods exist). The term 'latent' refers to the fact that we are uncovering hidden structure, and 'Dirichlet' refers to the Dirichlet distribution, described below. 
 
 
 
 # The Dirichlet Distribution
 
-Recall that the Beta distribution is dubbed the probability distribution for probabilities, because its values (and not just the associated probabilities) take on the range of $0$ to $1$. The Beta is a special case of the Dirichlet where $K$, the number of categories, is equal to $2$. The Dirichlet is an abstraction of the Beta, dubbed a "distribution over distributions", specifically with regard to categorical (Multinomial) data, as it obeys 'the simplex constraint' by generating probability vectors that sum to 1 for any discrete number of categories, serving as a prior for multiple multinomial distributions.
+Recall that the Beta distribution is dubbed the probability distribution for probabilities, because its values (and not just the associated probabilities) take on the range of $0$ to $1$. The Beta is a special case of the Dirichlet where $K$, the number of categories, is equal to $2$. The Dirichlet is an abstraction of the Beta, dubbed a "distribution over distributions", specifically with regard to categorical data, as it obeys 'the simplex constraint' by generating probability vectors that sum to 1 for any discrete number of categories, serving as a prior for multiple Multinomial distributions.
 
-For the mathematically inclined, the probability distribution/mass functions for the above-mentioned distributions are as follows; But I certainly don't expect you to extract a complete intuition from the mathematical formulas alone.
+The probability distribution/mass functions for the above-mentioned distributions are as follows, but I don't intend for you to extract a complete intuition from the formulas alone.
 
 **formula for Beta**
 
@@ -57,20 +57,24 @@ For the mathematically inclined, the probability distribution/mass functions for
 
 **formula for Dirichlet**
 
-If you have read my <a href="">first article</a> on continuous probability distributions (the second on distributions in general), you may have noticed that the Dirichlet is the only one not visualized, and this is due to the nature of its geometry requiring some additional explanation. It can be characterized as a <a href="">simplex</a>, which is the simplest possible <a href="">polytope</a> (a geometric object with flat sides) in any given dimension. A simplex can be visualized as a line in 1D space, a triangle in 2D space, and a tetrahedron in 3D space. Below, I use the 'stick-breaking' analogy to illustrate, though our LDA results (while not strictly a visualization of the Dirichlet) may be what's most intuitive.
+If you have read my <a href="">first article</a> on continuous probability distributions (the second on distributions in general), you may have noticed that the Dirichlet is the only one not visualized, and this is due to the nature of its geometry requiring some additional explanation. It can be characterized as a <a href="">simplex</a>, which is the simplest possible <a href="">polytope</a> (a geometric object with flat sides) in any given dimension. A simplex can be visualized as a line in 1D space, a triangle in 2D space, and a tetrahedron in 3D space. Below, I use the 'stick-breaking' analogy to illustrate. Our LDA results, while not strictly a visualization of the Dirichlet, may provide the most intuitive explanation.
 
 
 ## The Stick-Breaking Analogy
 
-Let's say you have a stick with a length of $1$ (in any unit of measurement), which we'll consider to represent 100% of probability mass. You proceed to break the stick into $K$ pieces, with probabilities $p_1, p_2, \ldots, p_K$. 
+Let's say you have a stick with a length of $1$ (in any unit of measurement), which we'll consider to represent 100% of a probability mass. You proceed to break the stick into $K$ pieces, representing probabilities $p_1, p_2, \ldots, p_K$. 
 
-The length of the first piece broken off represents $p_1$, and is drawn from a Beta distribution, leaving a stick of $1 - p_1$ behind. We break another piece $p_2$ from the remainder, and so on, with the $K$ pieces always forming a probability vector. If the end points are connected, we have a triangle after two breaks, a tetrahedron after three breaks, and then a generalized simplex in the dimensions beyond our physical realm. The Dirichlet distribution governs these splits, generalizing the Beta distribution from $K=2$ to any $K$.
+The length of the first piece broken off represents $p_1$, and is drawn from a Beta distribution, leaving a probability mass of $1 - p_1$ behind. We break another piece $p_2$ from the remainder, and so on, with the $K$ pieces always forming a probability vector. If the end points are connected, we have a triangle after two breaks, a tetrahedron after three breaks, and then a generalized simplex in the dimensions beyond our physical realm. The Dirichlet distribution governs these splits, generalizing the Beta distribution from $K=2$ to any $K$.
 
-The Dirichlet's parameters $\mathbf{\alpha} = \{\alpha_1, \alpha_2, \ldots, \alpha_K\}$ shape the splits. Large $\alpha_i$ favor bigger pieces for component $i$, equal $\alpha_i$ yield balanced splits, and small $\alpha_i$ produce sparse splits near the simplex's edges (vertices or boundaries). To plot this in a triangle (or tetrahedron) with equal-length edges, we can focus on plotting the level of concentration along the various edges using a color scale or shading intensity.
+The Dirichlet's parameters $\mathbf{\alpha} = \{\alpha_1, \alpha_2, \ldots, \alpha_K\}$ shape the splits.
+
+- Large $\alpha_i$ favor bigger pieces for component $i$
+- Equal $\alpha_i$ yield balanced splits
+- Small $\alpha_i$ produce sparse splits near the simplex's edges (vertices or boundaries). To plot this in a triangle with equal-length edges, we can use shading or a color-scale to represent the level of probability concentration along the various edges.
 
 **visual**
 
-Before we get to visualizing LDA, I would like to discuss a middle ground between the mathematical symbols and the plots of results, which is the probabilistic graphical modeling of LDA, using plate notation. 
+Before we get to visualizing LDA, I would like to discuss a middle ground between the mathematical symbols of the Dirichlet and the plots of model results, which is probabilistic graphical modeling using plate notation. 
 
 
 # Plate Notation
@@ -91,6 +95,8 @@ Plate notation visually represents PGMs using:
 Below, node $x$ represents a particular sequence or word count. The $D$ in the encompassing plate can be thought of as a loop over dimensions, and the $N$ in the plate encompassing that can be thought of as a loop over samples. 
 
 **Unigram Plate Diagram**
+
+The formula this represents is:
 
 $p(x) = \prod_{j=1}^D p(x_j)$
 
@@ -117,9 +123,9 @@ And we would represent this in pseudocode like the following:
 
 ```
 for i = 1 to N:
-  z(i) \sim p(z)
+  z(i) ~ p(z)
   for j = 1 to D:
-    x(i,j) \sim p(x|z = z(i))
+    x(i,j) ~ p(x|z = z(i))
 ```
 
 
@@ -129,7 +135,7 @@ As mentioned above, LDA models documents as mixtures of topics, with each word a
 
 **LDA Plate Diagram**
 
-Perhaps it's best to start with the pseudocode for this one:
+Perhaps it's best to start with the pseudocode on this one:
 
 ```
 α, β = fixed parameters
@@ -171,17 +177,28 @@ A more concentrated document-topic distribution, driven by a large alpha (α) in
 A more concentrated topic-word distribution, driven by a large beta (β) in LDA, means topics are dominated by fewer words (i.e., higher probabilities for specific words within each topic).
 
 
+
+
+
+
+
+
+
+reworded by Grok
+
+
+Key Parameters: $\alpha$ (Dirichlet prior for document-topic proportions $\theta$), $\beta$ (topic-word distribution, fixed or learned), $\theta$ (document-specific topic proportions, drawn from $\text{Dirichlet}(\alpha)$), $z$ (topic assignment per word, drawn from $\text{Multinomial}(\theta)$), and $x$ (observed word, drawn from $\text{Multinomial}(z, \beta)$).
+
+Global Parameters: $\alpha$ and $\beta$ are fixed outside plates, serving as global hyperparameters influencing the model.
+
+Document-Level Process: $\theta$ is sampled per document to determine topic proportions, governing the mixture of topics within each document.
+
+Word-Level Process: $z$ is sampled per word within each document, assigning topics based on $\theta$, and $x$ (the observed word) is drawn based on $z$ and $\beta$.
+
+Distinctive Feature: Unlike mixture models, LDA assigns a topic to each word, enabling fine-grained topic mixtures rather than a single topic per document.
+
+
+
+
 -->
-
-
-
-
-
-
-
-
-
-
-
-
 
