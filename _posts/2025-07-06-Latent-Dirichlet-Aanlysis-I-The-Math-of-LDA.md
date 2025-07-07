@@ -21,7 +21,7 @@ intro...
 
 # Introduction
 
-Latent Dirichlet Allocation (LDA), introduced in <a href="">this 2003 paper</a> by David Blei, Andrew Ng, and Michael I. Jordan, is a clustering method commonly used for the topic-modeling of text documents in a corpus (collection of documents), though it can also be used toward other applications. 
+Latent Dirichlet Allocation (LDA), introduced in a 2003 paper, is a soft-clustering method widely used for topic modeling of text documents in a corpus, with applications extending to other domains.
 
 As a quick sidenote, it is unrelated to Linear Discriminant Analysis, a dimension-reduction technique which shares the acronym LDA.
 
