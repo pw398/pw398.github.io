@@ -139,9 +139,9 @@ If we consider the vertices of a triangle to represent each word in a 3-word, 3-
 <details>
   <summary>View Test Code</summary>
 
-  ```python
-  print("Hello, World!")
-  ```
+  <pre><code class="language-python">
+print("Hello, World!")
+  </code></pre>
 
 </details>
 
