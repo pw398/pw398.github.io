@@ -1,0 +1,254 @@
+---
+layout: post
+title:  A Visual Understanding of Latent Dirichlet Allocation (LDA)
+date:   2025-07-13 00:00:00 +0000
+categories: TopicModeling LDA
+---
+
+
+Latent Dirichlet Allocation (LDA) is an unsupervised clustering method, largely used for the topic-modeling of text documents. While it produces a very rich interpretation, this comes with some complexity. The aim of this article is to provide visual and intuitive understanding, setting the stage for some real-word application in the next article.
+
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/library.jpg" style="height: 600px; width:auto;">
+
+
+
+# Outline 
+
+- Introduction
+- Intuition
+- The Dirichlet Distribution
+  - The Stick-Breaking Analogy
+- Plate Notation
+  - The Unigram Model
+  - Mixture of Unigrams
+  - LDA
+- Further Python Visualization
+- Solving LDA
+- What's Next?
+
+
+
+# Introduction
+
+Introduced in <a href="https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf">this paper</a> by David Blei et al., Latent Dirichlet Allocation (LDA) is an unsupervised clustering method commonly used for topic-modeling of documents in a corpus (collection of documents). Because it is unsupervised, labels are neither required as input, nor produced explicitly as output. We do provide the number of topics $K$, expecting to find meaningful distinctions and associations (and adjusting our approach if not). LDA is a soft-clustering method, so unlike the crisp topic-predictions we obtain from a method like K-Means, it assigns a probability distribution over topics to each document.
+
+As a quick sidenote, the 'LDA' we're referring to is not related to the dimension-reduction technique Linear Discriminant Analysis, which shares the same acronym.
+
+<p>Latent Dirichlet Allocation is a generative model. Rather than a discriminative model, which considers conditional probability $P(Y|X)$ given observed data $X$, we model the joint probability $P(X,Y)$, with $X$ representing the observed data, and $Y$ representing latent (hidden) variables. In solving, we actually generate sample documents, mixtures of topics and words drawn from topic-specific distributions. The generated documents are nonsensical in terms of our plain-language method of interpretation, as we use the bag-of-words (BoW) approach to vectorization, counting word frequencies, but not considering word sequences. Nevertheless, the model tends to perform quite well, and delivers a very rich interpretation of results, compared to other common methods of topic-modeling. We can (and next article, will) collapse the distributions into class predictions, like a supervised method (referred to as sLDA).</p>
+
+
+
+# Intuition
+
+As a soft-clustering method, LDA facilitates overlapping topic assignments. Rather than each document belonging to exactly one cluster, LDA assigns:
+
+<ol>
+  <li>A probability distribution over topics to each document.</li>
+  <ul>
+    <li>e.g., a document is 40% represented by fiction, 20% by science, and so on with regard to other topics.</li>
+  </ul>
+  <li>A probability distribution over words to each topic.</li>
+  <ul>
+    <li>e.g., a topic is represented 5% by "quantum", 2% by "teleport", and so on with regard to other words (perhaps thousands of them).</li>
+  </ul>
+</ol>
+
+Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You need to create an algorithm to sort them into sections, but you do not know which categorizations exist beforehand. The books are our documents, the unknown categorizations are our topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", the latent category corresponding to 'science' may be the one it predominantly belongs to. It may also have a strong probability of belonging to 'biology' or 'physics', and have small (often very small) probabilities of belonging to many other categories.
+
+<p>Most versions of LDA are generative models. Rather than consider the conditional probability $P(Y|X)$ given observed data $X$, as with a discriminative model, we model the joint probability $P(X,Y)$, with $Y$ representing latent (hidden) variables. In solving, we generate sample documents, which are nonsensical in plain language, because we utilize the bag-of-words (BoW) approach to text vectorization, paying attention to word frequencies, but not sequences. Nevertheless, we tend to come up with an effective predictor, which provides greater context than other common methods. We can (and next article, will) collapse the distributions into class predictions like a supervised method (called sLDA), and then compare to other models on a test set of data.</p>
+
+I promise I won't subject you (or I) to too much math, but some is necessary to describe the Dirichlet and related distributions. After all, it's in the name. Feel free to skim over it and focus more on the visuals further below.
+
+
+
+# The Dirichlet Distribution
+
+We can describe the Dirichlet in terms of its relationship to the Multinomial, which represents probabilities over discrete categorical outcomes. This is perfect for word counts, as the words represent discrete categories, and our BoW vectors can be normalized to represent the probabilities of each.
+
+
+<u><i>Multinomial Probability Mass Function (PMF):</i></u>
+
+$P(X_1 = x_1, X_2 = x_2, \ldots, X_k = x_k) = \frac{n!}{x_1! x_2! \cdots x_V!} p_1^{x_1} p_2^{x_2} \cdots p_k^{x_k}$
+
+- The $ k $ outcomes correspond to the number of words in the vocabulary.
+- The $ n $ trials correspond to the total number of words in a document. 
+- The counts $x_1, x_2, \ldots, x_k$ represent the number of times each word appears in the document.
+
+With a Binomial, representing two discrete potential outcomes, we can describe the probability of both outcomes (as knowing one determines the other) using the Beta distribution, dubbed the 'distribution of probabilities' because of its range of $0$ to $1$. You can visit <a href="https://pw598.github.io/probability/2024/12/04/Probability-Distributions-I-Discrete-Distributions.html">this article</a> for further detail on the Binomial, and <a href="https://pw598.github.io/probability/2024/12/09/Probability-Distributions-II-Continuous-Distributions-I.html">this article</a> for further detail on the Beta.
+
+Just as the Multinomial generalizes the Binomial to occurrences of multiple categories, the Dirichlet is a continuous distribution that generalizes the Beta to probabilities of multiple categories. Therefore, the Dirichlet serves as a prior (a conjugate prior) to the Multinomial. The parameters of the Dirichlet are a vector $\mathbf{\alpha} = \{\alpha_1, \alpha_2, \ldots, \alpha_k\}$ of concentration parameters, with each element corresponding to a discrete category of a Multinomial.
+
+
+<i><u>Dirichlet PDF:</u></i>
+
+<p>$f(p_1, \ldots, p_k | \alpha_1, \ldots, \alpha_k) = \frac{1}{B(\alpha)} \prod_{i=1}^k p_i^{\alpha_i - 1}$</p>
+
+- _ is ...
+- _ is ...
+
+In LDA, we have both a distribution of topics over documents, and a distribution of topics over words, so to avoid using two vectors of parameters denoted $\mathbf{\alpha}$, we name the vector of topic proportions over documents $\mathbf{\alpha}$, and the vector of topic proportions over words $\mathbf{\beta}$.
+
+If you have read my first article on <a href="https://pw598.github.io/probability/2024/12/09/Probability-Distributions-II-Continuous-Distributions-I.html">continuous distributions</a> (the second on distributions in general), you may have noticed that the Dirichlet is the only one not visualized. This is because of its abstract nature. We can visualize it as a simplex, which you can think of as an abstraction of a triangle, but I figured that just raises more questions. However, now would be a good time to drill into that.
+
+A simplex is the simplest possible polytope (a geometric object with flat sides), generalized to any dimension. A simplex in zero dimensions is a point, in one dimension is a line, and in two dimensions is a triangle. In three dimensions, we can visualize it as a tetrahedron. $K$, our number of topics, represents the number of vertices, so $K=3$ in two dimensions, $K=4$ in three dimensions, etc. 
+
+It may be more intuitive to think of the Dirichlet as a subplot of bar charts, with both rows and columns representing discrete categories (such as topics and words). A nice property of this is that we can abstract it to an arbitrary number of dimensions, but I would like to provide some intuition into the simplex representation, using the stick-breaking analogy.
+
+
+
+## The Stick-Breaking Analogy
+
+Consider a stick of length 1, representing a probability mass of $100\%$, which we break into $K$ pieces, representing probabilities $\{p_1, p_2, \ldots, p_k\}$, which sum to $1$. The probability represented by the first piece we break off, $p_1$, is chosen by a Beta distribution, leaving a mass of $(1-p_1)$ behind. Then, we break off a second piece, $p_2$, from the remainder, and continue until $K$ pieces. These pieces form a probability vector, and always fit together to form a simplex. The Dirichlet distribution governs these splits, generalizing the Beta to any $K$. Large $\alpha_i$ favor bigger pieces for component $i$, equal $\alpha_i$ yield balanced splits, and small $\alpha_i$ produce sparse splits. 
+
+Still a little abstract, I get it. Next, we'll get into visualizing the Dirichlet in a way that relates directly to LDA, using probabilistic graphical models (PGMs). Specifically, we'll be using plate notation. You may be familiar with PGMs if you've worked with Bayesian modeling through a library like PyMC. These visualize the relationships and direction of influence between upstream and downstream parameters, each of which have a random component, though nodes and arrows. Plate notation is very similar. LDA is indeed a Bayesian process, because of the sampling algorithm required to obtain the soft-clustering, and the ability/necessity to set priors over hyperparameters.
+
+
+
+# Plate Notation
+
+Plate notation is a form of PGM, which incorporates the following elements.
+
+- Circles (nodes) for random variables.
+- Rectangular plates for replication over samples or dimensions.
+- Arrows for dependencies between variables.
+
+To provide intuition, we'll build up from the simplest type of topic model, the unigram, to the mixture of unigrams, and then the hierarchical Bayesian model represented by LDA.
+
+
+## Unigram Model
+
+A unigram implies a single, Multinomial distribution over the entire vocabulary of the corpus all at once. The probability of the topic being defined by a particular word is relative to its frequency in the bag-of-words distribution. In the plate diagram below, node $x$ represents a particular word count, the $D$ in the encompassing plate can be thought of as a loop over dimensions, and the $N$ in the plate encompassing that as a loop over samples.
+
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram.png" style="height: 300px; width:auto;">
+
+
+The mathematical formula this represents is:
+
+$p(x) = \prod_{j=1}^D p(x_j)$
+
+And as pseudocode:
+
+```
+for i = 1 to N:
+  for j = 1 to D:
+    x(i,j) ~ p(x)
+```
+
+If we consider the vertices of a triangle to represent each word in a 3-word, 3-topic vocabulary, a point representing the probability vector that the singular corpus topic is defined by each vertex will be roughly centered in the middle of the triangle, assuming a large enough and diverse enough corpus. A colormap or shading-scale would also indicate the greatest amount of probability density being in the center, indicative of a roughly uniform distribution over topics.
+
+code and img
+
+
+
+## Mixture of Unigrams
+
+A mixture of unigrams extends the unigram approach by adding an additional variable, introducing latent topics as discrete components that generate the observed data. Each document is assumed to be produced by selecting a single topic from a set of predefined topics, with each topic defined by a Multinomial distribution over the vocabulary, and words within the document drawn independently from that topic's distribution. This allows the clustering of documents into thematic groups, enabling discovery of underlying patterns.
+
+<p>So, whereas the unigram collapses all text into a single distribution, ignoring thematic diversity, the mixture of unigrams accomodates one distribution per topic, capturing document-level variations. The plate diagram below adds a node $z$ to the unigram model, representing the latent topic that generated the observed data (as the mixture model is generative). For each sample, we generate a topic $z_i$ so there is one topic per sample. From this topic, we loop through each of our $D$ words, and for each of these words, generate a count $x_{ij}$</p>
+
+  
+
+Mixture Plate Diagram
+
+Represented mathematically:
+
+<p>$p(x) = \sum_z p(z) \prod_{j=1}^D ~p(x_j | z)$</p>
+
+And in pseudocode:
+
+```
+for i = 1 to N:
+  z(i) ~ p(z)
+  for j = 1 to D:
+    x(i,j) ~ p(x|z = z(i))
+```
+
+Geometrically, in our triangle representing a 3-word, 3-topic vocabulary, we would have one dot per topic, with some closer to particular vertices than others are to their respective vertices. The vertex with the dot closer to it than any other dot to other vertices represents the word that defines the crisp prediction of a particular topic.
+
+
+code, img
+
+
+
+## LDA
+
+LDA is a hierarchical extension of probabilistic topic models, positing that each document exhibits a mixture of topics, and that for each word in a given document, a topic is sampled from the list of topics.
+
+This is similar to the mixture of unigrams in terms of foundation and objectives, as both are unsupervised probabilistic framewords aimed at uncovering latent topics as word distributions. However, LDA differs in its granularity and flexibility, offering soft, mixed-membership representations of topics, whereas the mixture model performs hard-clustering.
+
+In the plate diagram below, $\mathbf{\alpha}$ and $\mathbf{\beta}$ are fixed parameters, because they appear outside of the plates. We can encode our prior expectations regarding these concentration parameters, but its quite typical to set a uniform prior, using $1/K$.
+
+<ul>
+  <li><p>$\theta$, sampled per documents, governs topic proportions. $\theta_d$ is the document-topic distribution for document $d$, $p(z|d)$, drawn from a Dirichlet parameterized by $\mathbf{\alpha}$.</p></li>
+
+  <li>$z$, sampled per word in each document, assigns topics based on $\theta$. $z_{d,n}$ is the topic assignment for the $n^{th}$ word in document $d$, drawn from the Multinomial distribution parameterized by $\theta_d$.</li>
+
+  <li>$x_{d,n}$ is the $n^{th}$ word in each document, assigns topics based on $\theta$.</li>
+</ul>
+
+
+LDA plate diagram
+
+It might be most intuitive to provide the pseudocode above the math for this one:
+
+```
+α, β = fixed parameters
+for i = 1 to N:
+    θ(i) ~ Dirichlet(α)
+    for j = 1 to D:
+        z(i,j) ~ Multinomial(θ(i))
+        x(i,j) ~ Multinomial(β, z(i,j))
+```
+
+Mathematically, the probability of observing the document's words given the model parameters is:
+
+formula
+
+A more concentrated document-topic distribution, driven by a large alpha (α) in LDA, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many.
+
+A more concentrated topic-word distribution, driven by a large beta (β) in LDA, means topics are dominated by fewer words (i.e., higher probabilities for specific words within each topic).
+
+validate this
+
+Geometrically, the interpretation is similar to the mixture of unigrams. The difference is that, rather than a single point within the triangle defining a singular topic chosen, there are degrees to which the topics of the documents represent each document.
+
+code, visual
+
+
+
+# Python Visualization
+
+To close, I would like to enrich the visualization a little, by showing the distributions of topics over words alongisde the distributions of topics over documents.
+
+...
+...
+
+
+
+# Solving LDA
+
+We haven't discussed the specifics of the algorithms used to solve LDA, and there are several, such as Gibbs sampling, variational inference, and ______. The Scikit-Learn model utilizes ________. Each of these could warrant an article to themselves, and for the sake of brevity, I will omit those details from this article. 
+
+There are also many variants of LDA, such as __________. Variants like _______ and ______ are deterministic than Bayesian in their approach. We are also not restricted to using the bag-of-words approach, and may explore alternatives to text vectorization, such as _________, ________, and _______ (include CBOW).
+
+
+
+# What's Next?
+
+The next article will be all about practical application. We will:
+- Link up to the Reddit API, because it's free, easy to use, and conducive to topic modeling. 
+- Use the visualization tool <code>pyLDAviz</code> to produce some cool interactive visualizations.
+- Compare supervised LDA (sLDA) to other methods such as Latent Semantic Indexing (LSI) and Non-Negative Matrix Factorization (NMF).
+- We might even incorporate some utilization of database software such as MongoDB.
+
+
+
+# References
+
+- ...
+- ...
+
+
+
+
+
