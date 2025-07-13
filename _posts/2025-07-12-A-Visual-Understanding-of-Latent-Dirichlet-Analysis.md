@@ -119,7 +119,7 @@ To provide intuition, we'll build up from the simplest type of topic model, the 
 
 A unigram implies a single, Multinomial distribution over the entire vocabulary of the corpus all at once. The probability of the topic being defined by a particular word is relative to its frequency in the bag-of-words distribution. In the plate diagram below, node $x$ represents a particular word count, the $D$ in the encompassing plate can be thought of as a loop over dimensions, and the $N$ in the plate encompassing that as a loop over samples.
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram.png" style="height: 300px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram_plate.png" style="height: 300px; width:auto;">
 
 
 The mathematical formula this represents is:
@@ -136,7 +136,77 @@ for i = 1 to N:
 
 If we consider the vertices of a triangle to represent each word in a 3-word, 3-topic vocabulary, a point representing the probability vector that the singular corpus topic is defined by each vertex will be roughly centered in the middle of the triangle, assuming a large enough and diverse enough corpus. A colormap or shading-scale would also indicate the greatest amount of probability density being in the center, indicative of a roughly uniform distribution over topics.
 
-code and img
+<details>
+  <summary>View Python Code</summary>
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Corpus with balanced but distinct topics
+corpus = [
+    "space space car computer",
+    "space car computer",
+    "car car space computer",
+    "car space car",
+    "computer computer space car",
+    "computer computer computer",
+]
+
+# Vectorize the corpus
+vectorizer = CountVectorizer(vocabulary=["space", "car", "computer"])
+X = vectorizer.fit_transform(corpus)
+feature_names = vectorizer.get_feature_names_out()
+word_counts = X.toarray()
+
+# Unigram Model: Single distribution based on word frequencies
+unigram_probs = np.sum(word_counts, axis=0) / np.sum(word_counts)
+
+# Function to convert probabilities to 2D simplex coordinates
+def probs_to_simplex(probs):
+    x = probs[:, 1] + 0.5 * probs[:, 2]
+    y = np.sqrt(3) / 2 * probs[:, 2]
+    return x, y
+
+# Convert unigram probabilities to simplex coordinates
+unigram_x, unigram_y = probs_to_simplex(np.array([unigram_probs]))
+
+# Plotting the simplex visualization
+fig, ax = plt.subplots(figsize=(6, 6.5))  # Height for title space
+
+# Define triangle vertices
+triangle = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3)/2]])
+
+# Function to plot simplex triangle
+def plot_simplex(ax):
+    ax.plot([triangle[0, 0], triangle[1, 0], triangle[2, 0], triangle[0, 0]],
+            [triangle[0, 1], triangle[1, 1], triangle[2, 1], triangle[0, 1]], 'k-')
+    ax.text(-0.05, -0.05, feature_names[0], fontsize=15, ha='right')
+    ax.text(1.05, -0.05, feature_names[1], fontsize=15, ha='left')
+    ax.text(0.5, np.sqrt(3)/2 + 0.06, feature_names[2], fontsize=15, ha='center')
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+# Plot the unigram model
+plot_simplex(ax)
+ax.scatter(unigram_x, unigram_y, facecolors='red', edgecolors='none', s=150)
+ax.scatter(unigram_x, unigram_y, facecolors='none', edgecolors='red', s=150, linewidth=2.0)
+ax.text(unigram_x[0], unigram_y[0] + 0.06, 
+        f'({unigram_probs[0]:.2f}, {unigram_probs[1]:.2f}, {unigram_probs[2]:.2f})', 
+        fontsize=12, ha='center', va='bottom')
+unigram_legend = ax.scatter([], [], facecolors='red', edgecolors='none', s=150, label='Corpus Distribution')
+ax.legend(handles=[unigram_legend], fontsize=12, loc='upper center', bbox_to_anchor=(0.5, -0.05))
+ax.set_title("Unigram Model", fontsize=20, pad=30)
+
+plt.tight_layout()
+plt.savefig('unigram_model.png', dpi=300, bbox_inches='tight')  # Export to PNG
+plt.show()
+```
+
+<p></p>
+
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram_model.png" style="height: 300px; width:auto;">
 
 
 
@@ -146,9 +216,7 @@ A mixture of unigrams extends the unigram approach by adding an additional varia
 
 <p>So, whereas the unigram collapses all text into a single distribution, ignoring thematic diversity, the mixture of unigrams accomodates one distribution per topic, capturing document-level variations. The plate diagram below adds a node $z$ to the unigram model, representing the latent topic that generated the observed data (as the mixture model is generative). For each sample, we generate a topic $z_i$ so there is one topic per sample. From this topic, we loop through each of our $D$ words, and for each of these words, generate a count $x_{ij}$</p>
 
-  
-
-Mixture Plate Diagram
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_plate.png" style="height: 300px; width:auto;">
 
 Represented mathematically:
 
@@ -186,8 +254,7 @@ In the plate diagram below, $\mathbf{\alpha}$ and $\mathbf{\beta}$ are fixed par
   <li>$x_{d,n}$ is the $n^{th}$ word in each document, assigns topics based on $\theta$.</li>
 </ul>
 
-
-LDA plate diagram
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_plate.png" style="height: 300px; width:auto;">
 
 It might be most intuitive to provide the pseudocode above the math for this one:
 
