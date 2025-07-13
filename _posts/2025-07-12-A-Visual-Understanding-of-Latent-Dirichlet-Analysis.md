@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "LDA"
+title:  "A Visual Understanding of Latent Dirichlet Allocation (LDA)"
 date:   2025-07-12 00:00:00 +0000
 categories: TopicModeling LDA
 ---
