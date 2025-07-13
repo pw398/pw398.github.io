@@ -136,14 +136,13 @@ for i = 1 to N:
 
 If we consider the vertices of a triangle to represent each word in a 3-word, 3-topic vocabulary, a point representing the probability vector that the singular corpus topic is defined by each vertex will be roughly centered in the middle of the triangle, assuming a large enough and diverse enough corpus. A colormap or shading-scale would also indicate the greatest amount of probability density being in the center, indicative of a roughly uniform distribution over topics.
 
-<details>
+<details markdown="1">
   <summary>View Test Code</summary>
 
-  <pre><code class="language-python">
-print("Hello, World!")
-  </code></pre>
-
-</details>
+  ```python
+  print("Hello, World!")
+  ```
+</details> 
 
 <p></p>
 
@@ -174,8 +173,9 @@ for i = 1 to N:
 
 Geometrically, in our triangle representing a 3-word, 3-topic vocabulary, we would have one dot per topic, with some closer to particular vertices than others are to their respective vertices. The vertex with the dot closer to it than any other dot to other vertices represents the word that defines the crisp prediction of a particular topic.
 
+**code**
 
-code, img
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_model.png" style="height: 300px; width:auto;">
 
 
 
