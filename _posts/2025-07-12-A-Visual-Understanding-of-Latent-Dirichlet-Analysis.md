@@ -388,18 +388,24 @@ For all the hairy mathematical details, I'll refer you to Wikipedia **link** or 
 - $\mathbf{\beta}$ is the Dirichlet prior for $\mathbf{\phi}_k$, of length $V$ for vocabulary.
 - $\mathbf{\phi}_k$ is the topic-word distribution, of length $V$.
 
-In our quest to infer the latent topic structure of a corpus, represented by the document-topic distribution $\mathbf{\theta}_d$ and topic-word distributions $\mathbf{\phi}_k$, given the model parameters $\mathbf{\alpha}$ and $\mathbf{\beta}$. The model seeks to maximize the probability of observing the corpus's words, given those parameters, while inferring those distributions. The distributions are inferred by maximizing the probability of observing the document's words given the model parameters, $p(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$, which is typically approximated through variational inference.
+<p>In our quest to infer the latent topic structure of a corpus, represented by the document-topic distribution $\mathbf{\theta}_d$ and topic-word distributions $\mathbf{\phi}_k$, given the model parameters $\mathbf{\alpha}$ and $\mathbf{\beta}$. The model seeks to maximize the probability of observing the corpus's words, given those parameters, while inferring those distributions. The distributions are inferred by maximizing the probability of observing the document's words given the model parameters, $p(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$, which is typically approximated through variational inference.</p>
 
 An overview of the generative process is as follows:
 
-1. For each topic $1, \ldots, K$:
-  - Draw a topic-word distribution $\mathbf{\phi}_k \sim \text{Dirichlet}(\mathbf{\beta})$, where $\mathbf{\theta}_k$ is a $V$-dimensional vector of word probabilities, and $\mathbf{\beta}$ is the Dirichlet prior parameter.
-
-2. For each document $d = 1, \ldots, D$:
-  - Draw a document-topic distribution $\mathbf{\theta}_d \sim \text{Dirichlet}(\mathbf{\alpha})$, where $\mathbf{\theta}_d$ is a $K$-dimensional vector of topic proportions, and $\mathbf{\alpha}$ is the Dirichlet prior parameter.
-
-  - For each word position in $n = 1, \ldots, N_d$ in document $d$:
-    - Draw a topic assignment $z_{d,n} \in [1, \ldots, V]$ is the observed word from the vocabulary, conditioned on the topic $z_{d,n}$.
+<ol>
+  <li><p>For each topic $1, \ldots, K$:</p></li>
+  <ul>
+    <li><p>Draw a topic-word distribution $\mathbf{\phi}_k \sim \text{Dirichlet}(\mathbf{\beta})$, where $\mathbf{\theta}_k$ is a $V$-dimensional vector of word probabilities, and $\mathbf{\beta}$ is the Dirichlet prior parameter.</p></li>
+  </ul>
+  <li><p>For each document $d = 1, \ldots, D$:</p></li>
+  <ul>
+    <li><p>Draw a document-topic distribution $\mathbf{\theta}_d \sim \text{Dirichlet}(\mathbf{\alpha})$, where $\mathbf{\theta}_d$ is a $K$-dimensional vector of topic proportions, and $\mathbf{\alpha}$ is the Dirichlet prior parameter.</p></li>
+    <li><p>For each word position in $n = 1, \ldots, N_d$ in document $d$:</p></li>
+    <ul>
+      <li><p>Draw a topic assignment $z_{d,n} \in [1, \ldots, V]$ is the observed word from the vocabulary, conditioned on the topic $z_{d,n}$.</p></li>
+    </ul>
+  </ul>
+</ol>
 
 A more concentrated document-topic distribution, driven by a large $\mathbf{\alpha}$, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many. A more concentrated topic-word distribution, driven by a large $\mathbf{\beta}$, means topics are dominated by fewer words; i.e., higher probabilities for specific words within each topic.
 
