@@ -223,7 +223,7 @@ plt.show()
 
 <p></p>
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram_model.png" style="height: 400px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram_model.png" style="height: 600px; width:auto;">
 
 
 
@@ -340,7 +340,7 @@ plt.show()
 </details> 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_model.png" style="height: 400px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_model.png" style="height: 600px; width:auto;">
 
 
 
@@ -466,7 +466,7 @@ plt.show()
 </details> 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_model.png" style="height: 400px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_model.png" style="height: 600px; width:auto;">
 
 
 
