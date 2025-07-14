@@ -665,7 +665,7 @@ We see that the unigram model, because it is only able to infer a distribution o
 
 In Scikit-Learn's <code>LatentDirichletAllocation</code> class, $\mathbf{\phi}_k$ corresponds to <code>lda.probs_list</code>, accessible thorugh <code>lda.components_</code>, and visualized in the top-row simplex topic-word distributions. $\mathbf{\theta}_d$ corresponds to <code>doc_topic_dists</code>, produced by the transformation <code>lda.transform(X)</code>. These are visualized by the bottom-row chart, showing the topic proportions per document.
 
-The marginal likelihood $P(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$ is implicitly optimized during <code>lda.fit(X)</code> and <code>lda.score(X)</code> provides the log-likelihood **link**.
+<p>The marginal likelihood $P(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$ is implicitly optimized during <code>lda.fit(X)</code> and <code>lda.score(X)</code> provides the log-likelihood **link**.</p>
 
 
 
@@ -816,12 +816,9 @@ There are also many variants of LDA, such as Correlated Topic Models (CTM), Hier
 The next article will be about practical application. We will:
 
 - Link up to the Reddit API, because its free of cost and restrictions, and conducive to topic modeling. 
-
 - Use the visualization tool <code>pyLDAviz</code> to produce some cool interactive visualizations.
-
 - Compare supervised LDA (sLDA) to other methods such as Latent Semantic Indexing (LSI) and Non-Negative Matrix Factorization (NMF).
-
-- Possibly integrate utilization of database software.
+- Possibly integrate the use of some database software, like MongoDB.
 
 
 
