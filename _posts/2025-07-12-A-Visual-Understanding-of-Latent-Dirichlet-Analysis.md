@@ -34,7 +34,9 @@ Introduced in <a href="https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf">
 
 As a quick sidenote, the 'LDA' we're referring to is not related to the dimension-reduction technique Linear Discriminant Analysis, which shares the same acronym.
 
-<p>Latent Dirichlet Allocation is a generative model. Rather than a discriminative model, which considers conditional probability $P(Y|X)$ given observed data $X$, we model the joint probability $P(X,Y)$, with $X$ representing the observed data, and $Y$ representing latent (hidden) variables. In solving, we actually generate sample documents, mixtures of topics and words drawn from topic-specific distributions. The generated documents are nonsensical in terms of our plain-language method of interpretation, as we use the bag-of-words (BoW) approach to vectorization, counting word frequencies, but disregarding word sequences. Nevertheless, the model tends to perform quite well, and delivers a very rich interpretation of results, compared to other common methods of topic-modeling. We can (and next article, will) collapse the distributions into class predictions, like a supervised method (referred to as sLDA).</p>
+<p>Latent Dirichlet Allocation is a generative model. Rather than a discriminative model, which predicts $P(Y|X)$ for labeling or inference, we model the joint probability $P(X,Y)$ to simulate data, with $X$ representing the observed data, and $Y$ representing latent (hidden) variables. LDA in particular models the joint probability $P(\mathbf{w}, \mathbf{z}, \mathbf{\theta}, \mathbf{\phi})$ of observed words $\mathbf{w}$ and latent topics $\mathbf{z}$, $\mathbf{\theta}$, $\mathbf{\phi}$, enabling the simulation of document creation. In contrast, discriminative models predict topic assignments or labels given words, focusing on the conditional probability $P(\mathbf{z} | \mathbf{w})$.
+
+In solving, we actually generate sample documents, mixtures of topics and words drawn from topic-specific distributions. The generated documents are nonsensical in terms of natural language interpretation, as we use the bag-of-words (BoW) approach to vectorization, counting word frequencies, but disregarding sequences. Nevertheless, the model tends to perform quite well, and delivers a very rich interpretation of results, compared to other common methods of topic-modeling. We can (and next article, will) collapse the distributions into class predictions, like a supervised method (referred to as sLDA).</p>
 
 
 
@@ -56,14 +58,14 @@ As a soft-clustering method, LDA facilitates overlapping topic assignments. Rath
 
 Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You need to create an algorithm to sort them into sections, but you do not know which categorizations exist beforehand. The books are our documents, the unknown categorizations are our topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", the latent category corresponding to 'science' may be the one it predominantly belongs to. It may also have a strong probability of belonging to 'biology' or 'physics', and have small (often very small) probabilities of belonging to many other categories.
 
-I promise I won't subject us to too much math, but some is necessary to describe the Dirichlet and related distributions. After all, it's in the name. Feel free to skim over it and focus more on the visuals further below.
+I promise I won't subject us to (too) much math, but some is necessary to describe the Dirichlet distribution and its relatives. After all, it's in the name. Feel free to skim over the mathematical notation, it won't harm the ability to gain intuition from the visuals below.
 
 
 
 
 # The Dirichlet Distribution
 
-We can describe the Dirichlet in terms of its relationship to the Multinomial, which represents probabilities over discrete categorical outcomes. This is perfect for word counts, as the words represent discrete categories, and our BoW vectors can be normalized to represent the probabilities of each.
+We can describe the Dirichlet in terms of its relationship to the Multinomial, which represents probabilities over discrete categorical  outcomes. This is perfect for word counts, as the words represent discrete categories, and our BoW vectors can be normalized to represent the probabilities of each.
 
 
 <u><i>Multinomial Probability Mass Function (PMF):</i></u>
@@ -83,11 +85,11 @@ Just as the Multinomial generalizes the Binomial to occurrences of multiple cate
 
 <p>$f(p_1, \ldots, p_k | \alpha_1, \ldots, \alpha_k) = \frac{1}{B(\alpha)} \prod_{i=1}^k p_i^{\alpha_i - 1}$</p>
 
-- $p_1, \ldots, p_k$ are probabilities of the components of a k-dimensional simplex
+- $p_1, \ldots, p_k$ are probabilities of the components of a k-dimensional simplex.
 
-- $\alpha_1, \ldots, \alpha_k$ are the parameters of the Dirichlet prior for the document-topic distribution $\mathbf{\theta}$
+- $\alpha_1, \ldots, \alpha_k$ are the cocentration parameters of the Dirichlet prior (for the document-topic distribution $\mathbf{\theta}$ in LDA).
 
-- $\frac{1}{B(\alpha)}$ is a normalizing constant that ensures the PDF integrates to 1. $B(\alpha)$ is the Beta function **link**, a fairly complicated function that involves the Gamma function **link**, which is a fairly complicated function that extends the factorial function to non-discrete values.
+- $\frac{1}{B(\alpha)}$ is a normalizing constant that ensures the PDF integrates to 1. $B(\alpha)$ is the <a href="https://en.wikipedia.org/wiki/Beta_function">Beta function</a>, a somewhat hairy mathematical formula which involves the <a href="https://simple.wikipedia.org/wiki/Gamma_function">Gamma function</a>, for which I'll also refer you to Wikipedia; but is an extension of the factorial function from discrete to real numbers, and therefore has utility in probability distributions.
 
 - $\prod_{i=1}^k$ is the 'kernel' of the Dirichlet PDF, weighting each probability $p_i$ by its corresponding concentration parameter $\alpha_i$.
 
@@ -98,8 +100,7 @@ If you have read my first article on <a href="https://pw598.github.io/probabilit
 
 A simplex is the simplest possible polytope (a geometric object with flat sides), generalized to any dimension. A simplex in zero dimensions is a point, in one dimension is a line, and in two dimensions is a triangle. In three dimensions, we can visualize it as a tetrahedron. $K$, our number of topics, represents the number of vertices, so $K=3$ in two dimensions, $K=4$ in three dimensions, etc. 
 
-It may be more intuitive to think of the Dirichlet as a subplot of bar charts, with both rows and columns representing discrete categories (such as topics and words). A nice property of this is that we can abstract it to an arbitrary number of dimensions, but I would like to provide some intuition into the simplex representation, using the stick-breaking analogy.
-
+With regard to its visualization in the context of LDA, we can think of a subplot of bar charts, with both rows and columns representing discrete categories (such as topics and words). A nice property of this is that we can abstract it to an arbitrary number of dimensions, however it is only partially correct with regard to visualizing the Dirichlet, which is continuous rather than discrete. To provide some further intuition into the simplex representation, we can think of the following 'stick-breaking' analogy.
 
 
 ## The Stick-Breaking Analogy
