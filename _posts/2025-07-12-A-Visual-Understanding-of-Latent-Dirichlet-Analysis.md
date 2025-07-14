@@ -7,7 +7,7 @@ categories: TopicModeling LDA
 
 Latent Dirichlet Allocation (LDA) is an unsupervised clustering method, largely used for the topic-modeling of text documents. While it produces a very rich interpretation, this comes with some complexity. The aim of this article is to provide visual and intuitive understanding, setting the stage for some real-word application in the next article.
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/library.jpg" style="height: 450px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/library.jpg" style="height: 600px; width:auto;">
 
 
 
@@ -80,14 +80,14 @@ With a Binomial, representing two discrete potential outcomes, we can describe t
 Just as the Multinomial generalizes the Binomial to occurrences of multiple categories, the Dirichlet is a continuous distribution that generalizes the Beta to probabilities of multiple categories. Therefore, the Dirichlet serves as a prior (a conjugate prior) to the Multinomial. The parameters of the Dirichlet are a vector $\mathbf{\alpha} = [\alpha_1, \alpha_2, \ldots, \alpha_k]$ of concentration parameters, with each element corresponding to a discrete category of a Multinomial.
 
 
-<i><u>Dirichlet PDF:</u></i>
+<i><u>Dirichlet Probability Density Function (PDF):</u></i>
 
 <p>$f(p_1, \ldots, p_k | \alpha_1, \ldots, \alpha_k) = \frac{1}{B(\alpha)} \prod_{i=1}^k p_i^{\alpha_i - 1}$</p>
 
 - _ is ...
 - _ is ...
 
-In LDA, we have both a distribution of topics over documents, and a distribution of topics over words, so to avoid using two vectors of parameters denoted $\mathbf{\alpha}$, we name the vector of topic proportions over documents $\mathbf{\alpha}$, and the vector of topic proportions over words $\mathbf{\beta}$.
+In LDA, we have both a distribution of topics over documents, and a distribution of words over topics, so to avoid using two vectors of parameters denoted $\mathbf{\alpha}$, we name the vector of topic proportions over documents $\mathbf{\alpha}$, and the vector of topic proportions over words $\mathbf{\beta}$.
 
 If you have read my first article on <a href="https://pw598.github.io/probability/2024/12/09/Probability-Distributions-II-Continuous-Distributions-I.html">continuous distributions</a> (the second on distributions in general), you may have noticed that the Dirichlet is the only one not visualized. This is because of its abstract nature. We can visualize it as a simplex, which you can think of as an abstraction of a triangle, but I figured that just raises more questions. Now would be a good time to elaborate.
 
@@ -150,7 +150,7 @@ corpus = [
 ]
 ```
 
-<p></p>
+The first represents the unigram model described directly above. The vector of probabilities notated above the red dot indicate the estimated probability that the corpus belongs to each of the words represented by the vertices.
 
 <details markdown="1">
   <summary>View Code</summary>
@@ -765,7 +765,7 @@ plt.show()
 </details> 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_with_params_varied.png" style="height: 500px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_with_params_varied.png" style="height: 450px; width:auto;">
 
 
 **Provide link to notebook**
