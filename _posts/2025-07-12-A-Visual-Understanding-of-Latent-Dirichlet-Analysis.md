@@ -360,17 +360,100 @@ for i = 1 to N:
 
 Mathematically, the probability of observing the document's words given the model parameters is:
 
-formula
+**formula**
 
 A more concentrated document-topic distribution, driven by a large alpha (α) in LDA, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many.
 
 A more concentrated topic-word distribution, driven by a large beta (β) in LDA, means topics are dominated by fewer words (i.e., higher probabilities for specific words within each topic).
 
-validate this
+**validate this**
 
 Geometrically, the interpretation is similar to the mixture of unigrams. The difference is that, rather than a single point within the triangle defining a singular topic chosen, there are degrees to which the topics of the documents represent each document.
 
-code, visual
+
+<details markdown="1">
+  <summary>View Code</summary>
+
+  ```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+
+# Corpus with balanced but distinct topics
+corpus = [
+    "space space car computer",
+    "space car computer",
+    "car car space computer",
+    "car space car",
+    "computer computer space car",
+    "computer computer computer",
+]
+
+# Vectorize the corpus
+vectorizer = CountVectorizer(vocabulary=["space", "car", "computer"])
+X = vectorizer.fit_transform(corpus)
+feature_names = vectorizer.get_feature_names_out()
+
+# LDA: Fit with higher priors
+n_topics = 3
+lda = LatentDirichletAllocation(n_components=n_topics, random_state=42,
+                               doc_topic_prior=1.0, topic_word_prior=1.0)
+lda.fit(X)
+lda_probs = lda.components_ / lda.components_.sum(axis=1, keepdims=True)
+
+# Compute topic role as max document-topic probability and apply transformation
+doc_topic_dist = lda.transform(X)  # P(z|d) for each document
+topic_roles = np.max(doc_topic_dist, axis=0)  # Max P(z|d) for each topic
+power = 1
+transformed_roles = topic_roles ** power
+# Scale to [0.2, 1.0] for visible but distinct transparency
+lda_alphas = 0.2 + 0.8 * (transformed_roles - np.min(transformed_roles)) / (np.max(transformed_roles) - np.min(transformed_roles) + 1e-10)
+
+# Function to convert probabilities to 2D simplex coordinates
+def probs_to_simplex(probs):
+    x = probs[:, 1] + 0.5 * probs[:, 2]
+    y = np.sqrt(3) / 2 * probs[:, 2]
+    return x, y
+
+# Convert LDA probabilities to simplex coordinates
+lda_x, lda_y = probs_to_simplex(lda_probs)
+
+# Plotting the simplex visualization
+fig, ax = plt.subplots(figsize=(6, 6.5))  # Height for title space
+
+# Define triangle vertices
+triangle = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3)/2]])
+
+# Function to plot simplex triangle
+def plot_simplex(ax):
+    ax.plot([triangle[0, 0], triangle[1, 0], triangle[2, 0], triangle[0, 0]],
+            [triangle[0, 1], triangle[1, 1], triangle[2, 1], triangle[0, 1]], 'k-')
+    ax.text(-0.05, -0.05, feature_names[0], fontsize=15, ha='right')
+    ax.text(1.05, -0.05, feature_names[1], fontsize=15, ha='left')
+    ax.text(0.5, np.sqrt(3)/2 + 0.06, feature_names[2], fontsize=15, ha='center')
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+# Plot the LDA model
+plot_simplex(ax)
+for i, (x, y, alpha) in enumerate(zip(lda_x, lda_y, lda_alphas)):
+    ax.scatter(x, y, facecolors='green', edgecolors='none', s=150, alpha=alpha)
+    ax.scatter(x, y, facecolors='none', edgecolors='darkgreen', s=150, linewidth=2.0)
+    ax.text(x, y + 0.06, f'T{i+1}: ({lda_probs[i][0]:.2f}, {lda_probs[i][1]:.2f}, {lda_probs[i][2]:.2f})', 
+            fontsize=12, ha='center', va='bottom')
+lda_legend = ax.scatter([], [], facecolors='green', edgecolors='none', s=150, label='Topic Distributions')
+ax.legend(handles=[lda_legend], fontsize=12, loc='upper center', bbox_to_anchor=(0.5, -0.05))
+ax.set_title("LDA", fontsize=20, pad=30)
+
+plt.tight_layout()
+plt.savefig('lda_plot.png', dpi=300, bbox_inches='tight')  # Export to PNG
+plt.show()
+  ```
+</details> 
+
+
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_model.png" style="height: 300px; width:auto;">
 
 
 
