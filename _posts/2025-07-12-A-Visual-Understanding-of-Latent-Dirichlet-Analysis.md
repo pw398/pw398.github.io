@@ -798,7 +798,7 @@ plt.show()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_with_params_varied.png" style="height: 450px; width:auto;">
 
 
-**Provide link to notebook**
+A notebook providing all the code used above is available <a href="https://github.com/pw598/Articles/blob/main/Topic%20Modeling%20Diagrams.ipynb">here</a>.
 
 
 # Solving LDA
@@ -822,8 +822,13 @@ The next article will be about practical application. We will:
 
 # References
 
-- ...
-- ...
+- Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. Journal of Machine Learning Research. [https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf]https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf
+
+- [LazyProgrammer]. Machine Learning: Natural Language Processing in Python (V2) [Video]. DeepLearningCourses.com. [https://deeplearningcourses.com/c/natural-language-processing-in-python]https://deeplearningcourses.com/c/natural-language-processing-in-python
+
+- Ruozzi, N. (n.d.). Latent Dirichlet Allocation. UT Dallas. [https://personal.utdallas.edu/~nrr150130/cs6375/2015fa/lects/Lecture_20_LDA.pdf]https://personal.utdallas.edu/~nrr150130/cs6375/2015fa/lects/Lecture_20_LDA.pdf
+
+- Grok
 
 
 
