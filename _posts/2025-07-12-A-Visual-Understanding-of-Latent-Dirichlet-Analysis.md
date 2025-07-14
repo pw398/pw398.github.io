@@ -215,7 +215,7 @@ ax.legend(handles=[unigram_legend], fontsize=12, loc='upper center', bbox_to_anc
 ax.set_title("Unigram Model", fontsize=20, pad=30)
 
 plt.tight_layout()
-plt.savefig('unigram_model.png', dpi=300, bbox_inches='tight')  # Export to PNG
+plt.savefig('unigram_model.png', dpi=300, bbox_inches='tight') 
 plt.show()
   ```
 </details> 
@@ -334,7 +334,7 @@ ax.legend(handles=[mixture_legend], fontsize=12, loc='upper center', bbox_to_anc
 ax.set_title("Mixture of Unigrams", fontsize=20, pad=30)
 
 plt.tight_layout()
-plt.savefig('mixture_model.png', dpi=300, bbox_inches='tight')  # Export to PNG
+plt.savefig('mixture_model.png', dpi=300, bbox_inches='tight') 
 plt.show()
   ```
 </details> 
@@ -460,7 +460,7 @@ ax.legend(handles=[lda_legend], fontsize=12, loc='upper center', bbox_to_anchor=
 ax.set_title("LDA", fontsize=20, pad=30)
 
 plt.tight_layout()
-plt.savefig('lda_plot.png', dpi=300, bbox_inches='tight')  # Export to PNG
+plt.savefig('lda_plot.png', dpi=300, bbox_inches='tight') 
 plt.show()
   ```
 </details> 
@@ -626,7 +626,7 @@ axes[1, 2].set_ylabel("Topic Proportions")
 axes[1, 2].legend()
 
 plt.tight_layout()
-plt.savefig('subplot_with_topic_dists.png', dpi=300, bbox_inches='tight')  # Export to PNG
+plt.savefig('subplot_with_topic_dists.png', dpi=300, bbox_inches='tight')
 plt.show()
   ```
 </details> 
@@ -770,19 +770,23 @@ plt.show()
 
 # Solving LDA
 
-We haven't discussed the specifics of the algorithms used to solve LDA, and there are several, such as Gibbs sampling, variational inference, and ______. The Scikit-Learn model utilizes ________. Each of these could warrant an article to themselves, and for the sake of brevity, I will omit those details from this article. 
+We haven't discussed the specifics of the algorithms used to solve LDA, and there are several, such as Gibbs sampling, variational inference, and expectation-maximization (EM). The Scikit-Learn model utilizes variational inference. Each of these could warrant an article to themselves, and for the sake of brevity, I will avoid going down the rabbit hole in this article. 
 
-There are also many variants of LDA, such as __________. Variants like _______ and ______ are deterministic than Bayesian in their approach. We are also not restricted to using the bag-of-words approach, and may explore alternatives to text vectorization, such as _________, ________, and _______ (include CBOW).
+There are also many variants of LDA, such as Correlated Topic Models (CTM), Hierarchical Dirichlet Process (HDP), and Dynamic Topic Models (DTM). We are also not restricted to using the bag-of-words approach, and may explore alternatives to text vectorization, such as TF-IDF and word embeddings (e.g., Word2Vec).
 
 
 
 # What's Next?
 
-The next article will be all about practical application. We will:
-- Link up to the Reddit API, because it's free, easy to use, and conducive to topic modeling. 
+The next article will be about practical application. We will:
+
+- Link up to the Reddit API, because its free of cost and restrictions, and conducive to topic modeling. 
+
 - Use the visualization tool <code>pyLDAviz</code> to produce some cool interactive visualizations.
+
 - Compare supervised LDA (sLDA) to other methods such as Latent Semantic Indexing (LSI) and Non-Negative Matrix Factorization (NMF).
-- We might even incorporate some utilization of database software such as MongoDB.
+
+- Possibly integrate utilization of database software.
 
 
 
