@@ -634,7 +634,7 @@ plt.show()
 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/subplot_with_topic_dists.png" style="height: 600px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/subplot_with_topic_dists.png" style="height: 500px; width:auto;">
 
 **Description...**
 
@@ -765,8 +765,10 @@ plt.show()
 </details> 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_with_params_varied.png" style="height: 600px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_with_params_varied.png" style="height: 500px; width:auto;">
 
+
+**Provide link to notebook**
 
 
 # Solving LDA
