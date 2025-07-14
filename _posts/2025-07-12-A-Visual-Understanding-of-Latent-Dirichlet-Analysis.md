@@ -76,7 +76,7 @@ $P(X_1 = x_1, X_2 = x_2, \ldots, X_k = x_k) = \frac{n!}{x_1! x_2! \cdots x_V!} p
 
 With a Binomial, representing two discrete potential outcomes, we can describe the probability of both outcomes (as knowing one determines the other) using the Beta distribution, dubbed the 'distribution of probabilities' because of its range of $0$ to $1$. You can visit <a href="https://pw598.github.io/probability/2024/12/04/Probability-Distributions-I-Discrete-Distributions.html">this article</a> for further detail on the Binomial, and <a href="https://pw598.github.io/probability/2024/12/09/Probability-Distributions-II-Continuous-Distributions-I.html">this article</a> for further detail on the Beta.
 
-Just as the Multinomial generalizes the Binomial to occurrences of multiple categories, the Dirichlet is a continuous distribution that generalizes the Beta to probabilities of multiple categories. Therefore, the Dirichlet serves as a prior (a conjugate prior) to the Multinomial. The parameters of the Dirichlet are a vector $\mathbf{\alpha} = [\alpha_1, \alpha_2, \ldots, \alpha_k\}$ of concentration parameters, with each element corresponding to a discrete category of a Multinomial.
+Just as the Multinomial generalizes the Binomial to occurrences of multiple categories, the Dirichlet is a continuous distribution that generalizes the Beta to probabilities of multiple categories. Therefore, the Dirichlet serves as a prior (a conjugate prior) to the Multinomial. The parameters of the Dirichlet are a vector $\mathbf{\alpha} = [\alpha_1, \alpha_2, \ldots, \alpha_k]$ of concentration parameters, with each element corresponding to a discrete category of a Multinomial.
 
 
 <i><u>Dirichlet PDF:</u></i>
@@ -203,8 +203,8 @@ plt.tight_layout()
 plt.savefig('unigram_model.png', dpi=300, bbox_inches='tight')  # Export to PNG
 plt.show()
   ```
-  
 </details> 
+
 
 <p></p>
 
@@ -216,7 +216,7 @@ plt.show()
 
 A mixture of unigrams extends the unigram approach by adding an additional variable, introducing latent topics as discrete components that generate the observed data. Each document is assumed to be produced by selecting a single topic from a set of predefined topics, with each topic defined by a Multinomial distribution over the vocabulary, and words within the document drawn independently from that topic's distribution. This allows the clustering of documents into thematic groups, enabling discovery of underlying patterns.
 
-<p>So, whereas the unigram collapses all text into a single distribution, ignoring thematic diversity, the mixture of unigrams accomodates one distribution per topic, capturing document-level variations. The plate diagram below adds a node $z$ to the unigram model, representing the latent topic that generated the observed data (as the mixture model is generative). For each sample, we generate a topic $z_i$ so there is one topic per sample. From this topic, we loop through each of our $D$ words, and for each of these words, generate a count $x_{ij}$</p>
+<p>So, whereas the unigram collapses all text into a single distribution, ignoring thematic diversity, the mixture of unigrams accomodates one distribution per topic, capturing document-level variations. The plate diagram below adds a node $z$ to the unigram model, representing the latent topic that generated the observed data (as the mixture model is generative). For each sample, we generate a topic $z_i$ so there is one topic per sample. From this topic, we loop through each of our $D$ words, and for each of these words, generate a count $x_{ij}$.</p>
 
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_plate.png" style="height: 300px; width:auto;">
 
@@ -235,7 +235,95 @@ for i = 1 to N:
 
 Geometrically, in our triangle representing a 3-word, 3-topic vocabulary, we would have one dot per topic, with some closer to particular vertices than others are to their respective vertices. The vertex with the dot closer to it than any other dot to other vertices represents the word that defines the crisp prediction of a particular topic.
 
-**code**
+
+<details markdown="1">
+  <summary>View Code</summary>
+
+  ```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Corpus with balanced but distinct topics
+corpus = [
+    "space space car computer",
+    "space car computer",
+    "car car space computer",
+    "car space car",
+    "computer computer space car",
+    "computer computer computer",
+]
+
+# Vectorize the corpus
+vectorizer = CountVectorizer(vocabulary=["space", "car", "computer"])
+X = vectorizer.fit_transform(corpus)
+feature_names = vectorizer.get_feature_names_out()
+word_counts = X.toarray()
+
+# Mixture of Unigrams: Hard clustering with controlled initialization
+def mixture_of_unigrams(X, n_components, random_state=42):
+    np.random.seed(random_state)
+    n_docs, n_words = X.shape
+    # Initialize clusters based on dominant words
+    cluster_assignments = np.array([0, 0, 1, 1, 2, 2])  # Space, car, computer clusters
+    topic_probs = np.zeros((n_components, n_words))
+    for k in range(n_components):
+        cluster_docs = X[cluster_assignments == k]
+        topic_probs[k] = np.sum(cluster_docs, axis=0)
+        topic_probs[k] /= topic_probs[k].sum() + 1e-10  # Normalize
+    return topic_probs
+
+# Compute mixture probabilities
+n_topics = 3
+mixture_probs = mixture_of_unigrams(word_counts, n_topics)
+
+# Determine crispness for coloring (crisp if any word's probability >= 0.7)
+crisp_threshold = 0.7
+facecolors = ['blue' if np.any(probs >= crisp_threshold) else 'none' for probs in mixture_probs]
+edgecolors = ['blue' for _ in mixture_probs]
+
+# Function to convert probabilities to 2D simplex coordinates
+def probs_to_simplex(probs):
+    x = probs[:, 1] + 0.5 * probs[:, 2]
+    y = np.sqrt(3) / 2 * probs[:, 2]
+    return x, y
+
+# Convert mixture probabilities to simplex coordinates
+mixture_x, mixture_y = probs_to_simplex(mixture_probs)
+
+# Plotting the simplex visualization
+fig, ax = plt.subplots(figsize=(6, 6.5))  # Height for title space
+
+# Define triangle vertices
+triangle = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3)/2]])
+
+# Function to plot simplex triangle
+def plot_simplex(ax):
+    ax.plot([triangle[0, 0], triangle[1, 0], triangle[2, 0], triangle[0, 0]],
+            [triangle[0, 1], triangle[1, 1], triangle[2, 1], triangle[0, 1]], 'k-')
+    ax.text(-0.05, -0.05, feature_names[0], fontsize=15, ha='right')
+    ax.text(1.05, -0.05, feature_names[1], fontsize=15, ha='left')
+    ax.text(0.5, np.sqrt(3)/2 + 0.06, feature_names[2], fontsize=15, ha='center')
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+# Plot the mixture of unigrams
+plot_simplex(ax)
+for i, (x, y, fc, ec) in enumerate(zip(mixture_x, mixture_y, facecolors, edgecolors)):
+    ax.scatter(x, y, facecolors=fc, edgecolors='none', s=150)
+    ax.scatter(x, y, facecolors='none', edgecolors=ec, s=150, linewidth=2.0)
+    ax.text(x, y + 0.06, f'T{i+1}: ({mixture_probs[i][0]:.2f}, {mixture_probs[i][1]:.2f}, {mixture_probs[i][2]:.2f})', 
+            fontsize=12, ha='center', va='bottom')
+mixture_legend = ax.scatter([], [], facecolors='blue', edgecolors='none', s=150, label='Topic Distributions')
+ax.legend(handles=[mixture_legend], fontsize=12, loc='upper center', bbox_to_anchor=(0.5, -0.05))
+ax.set_title("Mixture of Unigrams", fontsize=20, pad=30)
+
+plt.tight_layout()
+plt.savefig('mixture_model.png', dpi=300, bbox_inches='tight')  # Export to PNG
+plt.show()
+  ```
+</details> 
+
 
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_model.png" style="height: 300px; width:auto;">
 
