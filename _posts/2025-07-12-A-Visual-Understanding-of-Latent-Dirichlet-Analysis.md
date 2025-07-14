@@ -7,7 +7,7 @@ categories: TopicModeling LDA
 
 Latent Dirichlet Allocation (LDA) is an unsupervised clustering method, largely used for the topic-modeling of text documents. While it produces a very rich interpretation, this comes with some complexity. The aim of this article is to provide visual and intuitive understanding, setting the stage for some real-word application in the next article.
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/library.jpg" style="height: 600px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/library.jpg" style="height: 450px; width:auto;">
 
 
 
@@ -89,7 +89,7 @@ Just as the Multinomial generalizes the Binomial to occurrences of multiple cate
 
 In LDA, we have both a distribution of topics over documents, and a distribution of topics over words, so to avoid using two vectors of parameters denoted $\mathbf{\alpha}$, we name the vector of topic proportions over documents $\mathbf{\alpha}$, and the vector of topic proportions over words $\mathbf{\beta}$.
 
-If you have read my first article on <a href="https://pw598.github.io/probability/2024/12/09/Probability-Distributions-II-Continuous-Distributions-I.html">continuous distributions</a> (the second on distributions in general), you may have noticed that the Dirichlet is the only one not visualized. This is because of its abstract nature. We can visualize it as a simplex, which you can think of as an abstraction of a triangle, but I figured that just raises more questions. However, now would be a good time to drill into that.
+If you have read my first article on <a href="https://pw598.github.io/probability/2024/12/09/Probability-Distributions-II-Continuous-Distributions-I.html">continuous distributions</a> (the second on distributions in general), you may have noticed that the Dirichlet is the only one not visualized. This is because of its abstract nature. We can visualize it as a simplex, which you can think of as an abstraction of a triangle, but I figured that just raises more questions. Now would be a good time to elaborate.
 
 A simplex is the simplest possible polytope (a geometric object with flat sides), generalized to any dimension. A simplex in zero dimensions is a point, in one dimension is a line, and in two dimensions is a triangle. In three dimensions, we can visualize it as a tetrahedron. $K$, our number of topics, represents the number of vertices, so $K=3$ in two dimensions, $K=4$ in three dimensions, etc. 
 
@@ -101,7 +101,7 @@ It may be more intuitive to think of the Dirichlet as a subplot of bar charts, w
 
 Consider a stick of length 1, representing a probability mass of $100\%$, which we break into $K$ pieces, representing probabilities $[p_1, p_2, \ldots, p_k]$, which sum to $1$. The probability represented by the first piece we break off, $p_1$, is chosen by a Beta distribution, leaving a mass of $(1-p_1)$ behind. Then, we break off a second piece, $p_2$, from the remainder, and continue until $K$ pieces. These pieces form a probability vector, and always fit together to form a simplex. The Dirichlet distribution governs these splits, generalizing the Beta to any $K$. Large $\alpha_i$ favor bigger pieces for component $i$, equal $\alpha_i$ yield balanced splits, and small $\alpha_i$ produce sparse splits. 
 
-Still a little abstract, I get it. Next, we'll get into visualizing the Dirichlet in a way that relates directly to LDA, using probabilistic graphical models (PGMs). Specifically, we'll be using plate notation. You may be familiar with PGMs if you've worked with Bayesian modeling through a library like PyMC. These visualize the relationships and direction of influence between upstream and downstream parameters, each of which have a random component, though nodes and arrows. Plate notation is very similar. LDA is indeed a Bayesian process, because of the sampling algorithm required to obtain the soft-clustering, and the ability/necessity to set priors over hyperparameters.
+Still a little abstract, I get it. The below visualizations will relate the Dirichlet directly to LDA, and hopefully provide further intuition. We'll make reference to using probabilistic graphical models (PGMs); specifically, plate notation. You may be familiar with PGMs if you've worked with Bayesian modeling through a library like PyMC. These visualize the relationships and direction of influence between upstream and downstream parameters, each of which have a random component, though nodes and arrows. Plate notation is very similar, but describes iterative activity as well. LDA is indeed a Bayesian process, because of the sampling algorithm required to obtain the soft-clustering, and the ability/necessity to set priors over hyperparameters.
 
 
 
@@ -224,7 +224,7 @@ plt.show()
 
 <p></p>
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram_model.png" style="height: 600px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/unigram_model.png" style="height: 450px; width:auto;">
 
 
 
@@ -341,7 +341,7 @@ plt.show()
 </details> 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_model.png" style="height: 600px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_model.png" style="height: 450px; width:auto;">
 
 
 
@@ -356,14 +356,14 @@ In the plate diagram below, $\mathbf{\alpha}$ and $\mathbf{\beta}$ are fixed par
 <ul>
   <li><p>$\theta$, sampled per documents, governs topic proportions. $\theta_d$ is the document-topic distribution for document $d$, $p(z|d)$, drawn from a Dirichlet parameterized by $\mathbf{\alpha}$.</p></li>
 
-  <li>$z$, sampled per word in each document, assigns topics based on $\theta$. $z_{d,n}$ is the topic assignment for the $n^{th}$ word in document $d$, drawn from the Multinomial distribution parameterized by $\theta_d$.</li>
+  <li><p>$z$, sampled per word in each document, assigns topics based on $\theta$. $z_{d,n}$ is the topic assignment for the $n^{th}$ word in document $d$, drawn from the Multinomial distribution parameterized by $\theta_d$.</p></li>
 
-  <li>$x_{d,n}$ is the $n^{th}$ word in each document, assigns topics based on $\theta$.</li>
+  <li><p>$x_{d,n}$ is the $n^{th}$ word in each document, assigns topics based on $\theta$.</p></li>
 </ul>
 
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_plate.png" style="height: 300px; width:auto;">
 
-It might be most intuitive to provide the pseudocode above the math for this one:
+It might be most intuitive to provide the pseudocode before the math.
 
 ```
 α, β = fixed parameters
@@ -378,9 +378,9 @@ Mathematically, the probability of observing the document's words given the mode
 
 **formula**
 
-A more concentrated document-topic distribution, driven by a large alpha (α) in LDA, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many.
+A more concentrated document-topic distribution, driven by a large alpha, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many.
 
-A more concentrated topic-word distribution, driven by a large beta (β) in LDA, means topics are dominated by fewer words (i.e., higher probabilities for specific words within each topic).
+A more concentrated topic-word distribution, driven by a large beta, means topics are dominated by fewer words (i.e., higher probabilities for specific words within each topic).
 
 **validate this**
 
@@ -467,7 +467,7 @@ plt.show()
 </details> 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_model.png" style="height: 600px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_model.png" style="height: 450px; width:auto;">
 
 
 
@@ -634,7 +634,7 @@ plt.show()
 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/subplot_with_topic_dists.png" style="height: 900px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/subplot_with_topic_dists.png" style="height: 600px; width:auto;">
 
 **Description...**
 
@@ -765,7 +765,7 @@ plt.show()
 </details> 
 
 
-<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_with_params_varied.png" style="height: 900px; width:auto;">
+<img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/lda_with_params_varied.png" style="height: 600px; width:auto;">
 
 
 
