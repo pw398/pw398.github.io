@@ -34,7 +34,7 @@ Introduced in <a href="https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf">
 
 As a quick sidenote, the 'LDA' we're referring to is not related to the dimension-reduction technique Linear Discriminant Analysis, which shares the same acronym.
 
-<p>Latent Dirichlet Allocation is a generative model. Rather than a discriminative model, which considers conditional probability $P(Y|X)$ given observed data $X$, we model the joint probability $P(X,Y)$, with $X$ representing the observed data, and $Y$ representing latent (hidden) variables. In solving, we actually generate sample documents, mixtures of topics and words drawn from topic-specific distributions. The generated documents are nonsensical in terms of our plain-language method of interpretation, as we use the bag-of-words (BoW) approach to vectorization, counting word frequencies, but not considering word sequences. Nevertheless, the model tends to perform quite well, and delivers a very rich interpretation of results, compared to other common methods of topic-modeling. We can (and next article, will) collapse the distributions into class predictions, like a supervised method (referred to as sLDA).</p>
+<p>Latent Dirichlet Allocation is a generative model. Rather than a discriminative model, which considers conditional probability $P(Y|X)$ given observed data $X$, we model the joint probability $P(X,Y)$, with $X$ representing the observed data, and $Y$ representing latent (hidden) variables. In solving, we actually generate sample documents, mixtures of topics and words drawn from topic-specific distributions. The generated documents are nonsensical in terms of our plain-language method of interpretation, as we use the bag-of-words (BoW) approach to vectorization, counting word frequencies, but disregarding word sequences. Nevertheless, the model tends to perform quite well, and delivers a very rich interpretation of results, compared to other common methods of topic-modeling. We can (and next article, will) collapse the distributions into class predictions, like a supervised method (referred to as sLDA).</p>
 
 
 
@@ -56,9 +56,7 @@ As a soft-clustering method, LDA facilitates overlapping topic assignments. Rath
 
 Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You need to create an algorithm to sort them into sections, but you do not know which categorizations exist beforehand. The books are our documents, the unknown categorizations are our topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", the latent category corresponding to 'science' may be the one it predominantly belongs to. It may also have a strong probability of belonging to 'biology' or 'physics', and have small (often very small) probabilities of belonging to many other categories.
 
-<p>Most versions of LDA are generative models. Rather than consider the conditional probability $P(Y|X)$ given observed data $X$, as with a discriminative model, we model the joint probability $P(X,Y)$, with $Y$ representing latent (hidden) variables. In solving, we generate sample documents, which are nonsensical in plain language, because we utilize the bag-of-words (BoW) approach to text vectorization, paying attention to word frequencies, but not sequences. Nevertheless, we tend to come up with an effective predictor, which provides greater context than other common methods. We can (and next article, will) collapse the distributions into class predictions like a supervised method (called sLDA), and then compare to other models on a test set of data.</p>
-
-I promise I won't subject you (or I) to too much math, but some is necessary to describe the Dirichlet and related distributions. After all, it's in the name. Feel free to skim over it and focus more on the visuals further below.
+I promise I won't subject us to too much math, but some is necessary to describe the Dirichlet and related distributions. After all, it's in the name. Feel free to skim over it and focus more on the visuals further below.
 
 
 
@@ -108,7 +106,7 @@ It may be more intuitive to think of the Dirichlet as a subplot of bar charts, w
 
 Consider a stick of length 1, representing a probability mass of $100\%$, which we break into $K$ pieces, representing probabilities $[p_1, p_2, \ldots, p_k]$, which sum to $1$. The probability represented by the first piece we break off, $p_1$, is chosen by a Beta distribution, leaving a mass of $(1-p_1)$ behind. Then, we break off a second piece, $p_2$, from the remainder, and continue until $K$ pieces. These pieces form a probability vector, and always fit together to form a simplex. The Dirichlet distribution governs these splits, generalizing the Beta to any $K$. Large $\alpha_i$ favor bigger pieces for component $i$, equal $\alpha_i$ yield balanced splits, and small $\alpha_i$ produce sparse splits. 
 
-Still a little abstract, I get it. The below visualizations will relate the Dirichlet directly to LDA, and hopefully provide further intuition. We'll make reference to using probabilistic graphical models (PGMs); specifically, plate notation. You may be familiar with PGMs if you've worked with Bayesian modeling through a library like PyMC. These visualize the relationships and direction of influence between upstream and downstream parameters, each of which have a random component, though nodes and arrows. Plate notation is very similar, but describes iterative activity as well. LDA is indeed a Bayesian process, because of the sampling algorithm required to obtain the soft-clustering, and the ability/necessity to set priors over hyperparameters.
+Still a little abstract, I get it. The below visualizations will relate the Dirichlet directly to LDA, and hopefully provide further intuition. We'll make reference to probabilistic graphical models (PGMs); specifically, plate notation. You may be familiar with PGMs if you've worked with Bayesian modeling through a library like PyMC. These visualize the relationships and direction of influence between upstream and downstream parameters, each of which have a random component, through nodes and arrows. Plate notation is very similar, but describes iterative activity as well. LDA is indeed a Bayesian process, because of the sampling algorithm required to obtain the soft-clustering, and the ability/necessity to set priors over hyperparameters.
 
 
 
@@ -142,7 +140,7 @@ for i = 1 to N:
     x(i,j) ~ p(x)
 ```
 
-If we consider the vertices of a triangle to represent each word in a 3-word, 3-topic vocabulary, a point representing the probability vector that the singular corpus topic is defined by each vertex will be roughly centered in the middle of the triangle, assuming a large enough and diverse enough corpus. A colormap or shading-scale would also indicate the greatest amount of probability density being in the center, indicative of a roughly uniform distribution over topics.
+If we consider the vertices of a triangle to represent each word in a 3-word, 3-topic vocabulary, a point representing the probability vector that the singular topic is defined by will be roughly centered in the middle of a triangle, assuming a sufficiently large and unbiased corpus. A colormap or shading-scale would also indicate greatest density in the center, indicative of a roughly uniform distribution over topics.
 
 The triangular diagrams below refer to a simple toy corpus, consisting of the following 6 documents:
 
@@ -157,7 +155,7 @@ corpus = [
 ]
 ```
 
-The first represents the unigram model described directly above. The vector of probabilities notated above the red dot indicate the estimated probability that the corpus belongs to each of the words represented by the vertices.
+The first diagram will represent the unigram model described directly above. The vector of probabilities notated above the red dot indicate the estimated probability that the corpus belongs to each of the words represented by the vertices.
 
 <details markdown="1">
   <summary>View Code</summary>
@@ -239,7 +237,7 @@ plt.show()
 
 A mixture of unigrams extends the unigram approach by adding an additional variable, introducing latent topics as discrete components that generate the observed data. Each document is assumed to be produced by selecting a single topic from a set of predefined topics, with each topic defined by a Multinomial distribution over the vocabulary, and words within the document drawn independently from that topic's distribution. This allows the clustering of documents into thematic groups, enabling discovery of underlying patterns.
 
-<p>So, whereas the unigram collapses all text into a single distribution, ignoring thematic diversity, the mixture of unigrams accomodates one distribution per topic, capturing document-level variations. The plate diagram below adds a node $z$ to the unigram model, representing the latent topic that generated the observed data (as the mixture model is generative). For each sample, we generate a topic $z_i$ so there is one topic per sample. From this topic, we loop through each of our $D$ words, and for each of these words, generate a count $x_{ij}$.</p>
+<p>So, whereas the unigram collapses all text into a single distribution, ignoring thematic diversity, the mixture of unigrams accomodates one distribution per topic, capturing document-level variation. The plate diagram below adds a node $z$ to the unigram model, representing the latent topic that generated the observed data (as the mixture model is generative). For each sample, we generate a topic $z_i$ so there is one topic per sample. From this topic, we loop through each of our $D$ words, and for each of these words, generate a count $x_{ij}$.</p>
 
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/mixture_plate.png" style="height: 300px; width:auto;">
 
@@ -388,7 +386,7 @@ For all the hairy mathematical details, I'll refer you to Wikipedia **link** or 
 - $\mathbf{\beta}$ is the Dirichlet prior for $\mathbf{\phi}_k$, of length $V$ for vocabulary.
 - $\mathbf{\phi}_k$ is the topic-word distribution, of length $V$.
 
-<p>In our quest to infer the latent topic structure of a corpus, represented by the document-topic distribution $\mathbf{\theta}_d$ and topic-word distributions $\mathbf{\phi}_k$, given the model parameters $\mathbf{\alpha}$ and $\mathbf{\beta}$. The model seeks to maximize the probability of observing the corpus's words, given those parameters, while inferring those distributions. The distributions are inferred by maximizing the probability of observing the document's words given the model parameters, $p(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$, which is typically approximated through variational inference.</p>
+<p>Our mission is to infer the latent topic structure of a corpus, represented by the document-topic distribution $\mathbf{\theta}_d$ and topic-word distributions $\mathbf{\phi}_k$, given the model parameters $\mathbf{\alpha}$ and $\mathbf{\beta}$. The model seeks to maximize the probability of observing the corpus's words, given those parameters, while inferring those distributions. The distributions are inferred by maximizing the probability of observing the document's words given the model parameters, $p(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$, which is typically approximated through variational inference.</p>
 
 An overview of the generative process is as follows:
 
@@ -400,9 +398,9 @@ An overview of the generative process is as follows:
   <li><p>For each document $d = 1, \ldots, D$:</p></li>
   <ul>
     <li><p>Draw a document-topic distribution $\mathbf{\theta}_d \sim \text{Dirichlet}(\mathbf{\alpha})$, where $\mathbf{\theta}_d$ is a $K$-dimensional vector of topic proportions, and $\mathbf{\alpha}$ is the Dirichlet prior parameter.</p></li>
-    <li><p>For each word position in $n = 1, \ldots, N_d$ in document $d$:</p></li>
+    <li>For each word position in $n = 1, \ldots, N_d$ in document $d$:</li>
     <ul>
-      <li><p>Draw a topic assignment $z_{d,n} \in [1, \ldots, V]$ is the observed word from the vocabulary, conditioned on the topic $z_{d,n}$.</p></li>
+      <li>Draw a topic assignment $z_{d,n} \in [1, \ldots, V]$ is the observed word from the vocabulary, conditioned on the topic $z_{d,n}$.</li>
     </ul>
   </ul>
 </ol>
@@ -498,7 +496,7 @@ plt.show()
 
 # Further Python Visualization
 
-To take the visualization a bit further, let's include the distribution of topics over documents.
+To take the visualization a step further, let's include the distribution of topics over documents.
 
 <details markdown="1">
   <summary>View Code</summary>
@@ -671,9 +669,9 @@ In Scikit-Learn's <code>LatentDirichletAllocation</code> class, $\mathbf{\phi}_k
 
 # Effect of Varying Parameters
 
-To demonstrate the impact of varying the Dirichlet parameters, the next subplot will only include LDA representations, but with varying values for $\mathbf{\alpha}$ and $\mathbf{\beta}$. Though vectors mathematically, they are input as scalars because Scikit-Learn applies the same value to all topics. To vary the values for particular categories, we would need a more specialized approach.
+To demonstrate the impact of varying the Dirichlet parameters, the next subplot will only include LDA representations, but with varying values for $\mathbf{\alpha}$ and $\mathbf{\beta}$. Though vectors mathematically, they are input as scalars because Scikit-Learn applies the same value to all topics. To vary the values for particular categories, we would need a more customized approach.
 
-The two charts on the left hold $\beta$ constant and manipulate $\alpha$, and the two charts on the right hold $\alpha$ constant and manipulate $\beta$. The values held constant are equal to 1 divided by the number of topics, producing uniformly distributed values by category, as is the common default.
+The two charts on the left hold $\beta$ constant and manipulate $\alpha$, and the two charts on the right hold $\alpha$ constant and manipulate $\beta$. The values held constant are equal to $1$ divided by the number of topics, producing uniformly distributed values by category, as is the common default.
 
 
 <details markdown="1">
@@ -805,9 +803,9 @@ plt.show()
 
 # Solving LDA
 
-We haven't discussed the specifics of the algorithms used to solve LDA, and there are several, such as Gibbs sampling, variational inference, and expectation-maximization (EM). The Scikit-Learn model utilizes variational inference. Each of these could warrant an article to themselves, and for the sake of brevity, I will avoid going down the rabbit hole in this article. 
+We haven't discussed the specifics of the algorithms used to solve LDA, and there are several, such as Gibbs sampling, variational inference, and expectation-maximization (EM). The Scikit-Learn model utilizes variational inference. Each of these could warrant an article to themselves, and for the sake of brevity, I will avoid going down those rabbit holes in this article. 
 
-There are also many variants of LDA, such as Correlated Topic Models (CTM), Hierarchical Dirichlet Process (HDP), and Dynamic Topic Models (DTM). We are also not restricted to using the bag-of-words approach, and may explore alternatives to text vectorization, such as TF-IDF and word embeddings (e.g., Word2Vec).
+There are also many variants of LDA, such as Correlated Topic Models (CTM), Hierarchical Dirichlet Process (HDP), and Dynamic Topic Models (DTM). And, we are not limited to only the bag-of-words method of vectorization; we could alternatively rely on methods like TF-IDF and continuous word embeddings.
 
 
 
@@ -816,9 +814,9 @@ There are also many variants of LDA, such as Correlated Topic Models (CTM), Hier
 The next article will be about practical application. We will:
 
 - Link up to the Reddit API, because its free of cost and restrictions, and conducive to topic modeling. 
-- Use the visualization tool <code>pyLDAviz</code> to produce some cool interactive visualizations.
+- Use the visualization tool <code>pyLDAviz</code> to produce some cool and interactive visualizations.
 - Compare supervised LDA (sLDA) to other methods such as Latent Semantic Indexing (LSI) and Non-Negative Matrix Factorization (NMF).
-- Possibly integrate the use of some database software, like MongoDB.
+- Integrate the use of database software like MongoDB.
 
 
 
