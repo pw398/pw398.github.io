@@ -22,6 +22,7 @@ Latent Dirichlet Allocation (LDA) is an unsupervised clustering method, largely 
   - Mixture of Unigrams
   - LDA
 - Further Python Visualization
+- Effect of Varying Parameters
 - Solving LDA
 - What's Next?
 
@@ -84,8 +85,14 @@ Just as the Multinomial generalizes the Binomial to occurrences of multiple cate
 
 <p>$f(p_1, \ldots, p_k | \alpha_1, \ldots, \alpha_k) = \frac{1}{B(\alpha)} \prod_{i=1}^k p_i^{\alpha_i - 1}$</p>
 
-- _ is ...
-- _ is ...
+- $p_1, \ldots, p_k$ are probabilities of the components of a k-dimensional simplex
+
+- $\alpha_1, \ldots, \alpha_k$ are the parameters of the Dirichlet prior for the document-topic distribution $\mathbf{\theta}$
+
+- $\frac{1}{B(\alpha)}$ is a normalizing constant that ensures the PDF integrates to 1. $B(\alpha)$ is the Beta function **link**, a fairly complicated function that involves the Gamma function **link**, which is a fairly complicated function that extends the factorial function to non-discrete values.
+
+- $\prod_{i=1}^k$ is the 'kernel' of the Dirichlet PDF, weighting each probability $p_i$ by its corresponding concentration parameter $\alpha_i$.
+
 
 In LDA, we have both a distribution of topics over documents, and a distribution of words over topics, so to avoid using two vectors of parameters denoted $\mathbf{\alpha}$, we name the vector of topic proportions over documents $\mathbf{\alpha}$, and the vector of topic proportions over words $\mathbf{\beta}$.
 
@@ -374,15 +381,27 @@ for i = 1 to N:
         x(i,j) ~ Multinomial(β, z(i,j))
 ```
 
-Mathematically, the probability of observing the document's words given the model parameters is:
+For all the hairy mathematical details, I'll refer you to Wikipedia **link** or the original paper **link**, but explain it up to a certain level of detail. A point of clarification I'll provide about the model parameters is that, in the mathematics of LDA, there are several vector-valued parameters:
 
-**formula**
+- $\mathbf{\theta}_d$ is the document-topic distribution of length $K$.
+- $\mathbf{\alpha}$ is the Dirichlet prior for $\mathbf{\theta}_d$, of length $K$.
+- $\mathbf{\beta}$ is the Dirichlet prior for $\mathbf{\phi}_k$, of length $V$ for vocabulary.
+- $\mathbf{\phi}_k$ is the topic-word distribution, of length $V$.
 
-A more concentrated document-topic distribution, driven by a large alpha, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many.
+In our quest to infer the latent topic structure of a corpus, represented by the document-topic distribution $\mathbf{\theta}_d$ and topic-word distributions $\mathbf{\phi}_k$, given the model parameters $\mathbf{\alpha}$ and $\mathbf{\beta}$. The model seeks to maximize the probability of observing the corpus's words, given those parameters, while inferring those distributions. The distributions are inferred by maximizing the probability of observing the document's words given the model parameters, $p(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$, which is typically approximated through variational inference.
 
-A more concentrated topic-word distribution, driven by a large beta, means topics are dominated by fewer words (i.e., higher probabilities for specific words within each topic).
+An overview of the generative process is as follows:
 
-**validate this**
+1. For each topic $1, \ldots, K$:
+  - Draw a topic-word distribution $\mathbf{\phi}_k \sim \text{Dirichlet}(\mathbf{\beta})$, where $\mathbf{\theta}_k$ is a $V$-dimensional vector of word probabilities, and $\mathbf{\beta}$ is the Dirichlet prior parameter.
+
+2. For each document $d = 1, \ldots, D$:
+  - Draw a document-topic distribution $\mathbf{\theta}_d \sim \text{Dirichlet}(\mathbf{\alpha})$, where $\mathbf{\theta}_d$ is a $K$-dimensional vector of topic proportions, and $\mathbf{\alpha}$ is the Dirichlet prior parameter.
+
+  - For each word position in $n = 1, \ldots, N_d$ in document $d$:
+    - Draw a topic assignment $z_{d,n} \in [1, \ldots, V]$ is the observed word from the vocabulary, conditioned on the topic $z_{d,n}$.
+
+A more concentrated document-topic distribution, driven by a large $\mathbf{\alpha}$, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many. A more concentrated topic-word distribution, driven by a large $\mathbf{\beta}$, means topics are dominated by fewer words; i.e., higher probabilities for specific words within each topic.
 
 Geometrically, the interpretation is similar to the mixture of unigrams. The difference is that, rather than a single point within the triangle defining a singular topic chosen, there are degrees to which the topics of the documents represent each document.
 
@@ -471,7 +490,7 @@ plt.show()
 
 
 
-# Python Visualization
+# Further Python Visualization
 
 To take the visualization a bit further, let's include the distribution of topics over documents.
 
@@ -633,11 +652,18 @@ plt.show()
 </details> 
 
 
-
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/subplot_with_topic_dists.png" style="height: 500px; width:auto;">
 
-**Description...**
 
+We see that the unigram model, because it is only able to infer a distribution over the entire corpus, must select the same topic across documents. The mixture of unigrams, as promised, is able to assign different topics to different documents. The LDA distribution of topics over documents is more granular, providing a distribution of topics over each document. 
+
+In Scikit-Learn's <code>LatentDirichletAllocation</code> class, $\mathbf{\phi}_k$ corresponds to <code>lda.probs_list</code>, accessible thorugh <code>lda.components_</code>, and visualized in the top-row simplex topic-word distributions. $\mathbf{\theta}_d$ corresponds to <code>doc_topic_dists</code>, produced by the transformation <code>lda.transform(X)</code>. These are visualized by the bottom-row chart, showing the topic proportions per document.
+
+The marginal likelihood $P(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$ is implicitly optimized during <code>lda.fit(X)</code> and <code>lda.score(X)</code> provides the log-likelihood **link**.
+
+
+
+# Effect of Varying Parameters
 
 To demonstrate the impact of varying the Dirichlet parameters, the next subplot will only include LDA representations, but with varying values for $\mathbf{\alpha}$ and $\mathbf{\beta}$. Though vectors mathematically, they are input as scalars because Scikit-Learn applies the same value to all topics. To vary the values for particular categories, we would need a more specialized approach.
 
