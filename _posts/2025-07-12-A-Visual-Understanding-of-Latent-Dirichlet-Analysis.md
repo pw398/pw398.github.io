@@ -34,9 +34,7 @@ Introduced in <a href="https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf">
 
 As a quick sidenote, the 'LDA' we're referring to is not related to the dimension-reduction technique Linear Discriminant Analysis, which shares the same acronym.
 
-<p>Latent Dirichlet Allocation is a generative model. Rather than a discriminative model, which predicts $P(Y|X)$ for labeling or inference, we model the joint probability $P(X,Y)$ to simulate data, with $X$ representing the observed data, and $Y$ representing latent (hidden) variables. LDA in particular models the joint probability of observed words and latent topics, enabling the simulation of document creation.</p>
-
-In solving, we actually generate sample documents, mixtures of topics and words drawn from topic-specific distributions. The generated documents are nonsensical in terms of natural language interpretation, as we use the bag-of-words (BoW) approach to vectorization, counting word frequencies, but disregarding sequences. Nevertheless, the model tends to perform quite well, and delivers a very rich interpretation of results, compared to other common methods of topic-modeling. We can (and next article, will) collapse the distributions into class predictions, like a supervised method (referred to as sLDA).
+<p>Latent Dirichlet Allocation is a generative model. Rather than a discriminative model, which predicts $P(Y|X)$ for labeling or inference, we model the joint probability $P(X,Y)$ to simulate data, with $X$ representing the observed data, and $Y$ representing latent (hidden) variables. In solving, we actually generate sample documents, mixtures of topics and words drawn from topic-specific distributions. The generated documents are nonsensical in terms of natural language interpretation, as we use the bag-of-words (BoW) approach to vectorization, counting word frequencies, but disregarding sequences. Nevertheless, the model tends to perform quite well, and delivers a very rich interpretation of results, compared to other common methods of topic-modeling. We can (and next article, will) collapse the distributions into class predictions, like a supervised method (referred to as sLDA).</p>
 
 
 
@@ -58,7 +56,7 @@ As a soft-clustering method, LDA facilitates overlapping topic assignments. Rath
 
 Imagine a library where many books are strewn across the tables and floor, with no labels or organization. This collection of books represents our corpus. You need to create an algorithm to sort them into sections, but you do not know which categorizations exist beforehand. The books are our documents, the unknown categorizations are our topics, and the words are clues as to which topic a book belongs to. If a book has words like "experiment" and "hypothesis", the latent category corresponding to 'science' may be the one it predominantly belongs to. It may also have a strong probability of belonging to 'biology' or 'physics', and have small (often very small) probabilities of belonging to many other categories.
 
-I promise I won't subject us to (too) much math, but some is necessary to describe the Dirichlet distribution and its relatives. After all, it's in the name. Feel free to skim over the mathematical notation, it won't harm the ability to gain intuition from the visuals below.
+I promise I won't subject us to (too) much math, but some is necessary to describe the Dirichlet distribution and its relatives. After all, it's in the name. Feel free to skim over the mathematical notation, it won't harm the ability to gain insight from the visuals.
 
 
 
@@ -380,7 +378,7 @@ for i = 1 to N:
         x(i,j) ~ Multinomial(β, z(i,j))
 ```
 
-For all the hairy mathematical details, I'll refer you to Wikipedia **link** or the original paper **link**, but explain it up to a certain level of detail. A point of clarification I'll provide about the model parameters is that, in the mathematics of LDA, there are several vector-valued parameters:
+For all the hairy mathematical details, I'll refer you to Wikipedia **link** or the original paper **link** (there will be some differences in terms of notation, and whether referring to a corpus or a plurality of corpora), but explain it up to a certain level of detail. A point of clarification I'll provide about the model parameters is that, in the mathematics of LDA, there are several vector-valued parameters:
 
 - $\mathbf{\theta}_d$ is the document-topic distribution of length $K$.
 - $\mathbf{\alpha}$ is the Dirichlet prior for $\mathbf{\theta}_d$, of length $K$.
@@ -408,7 +406,7 @@ An overview of the generative process is as follows:
 
 A more concentrated document-topic distribution, driven by a large $\mathbf{\alpha}$, means documents are more likely to be dominated by a smaller number of topics. This results in the count of documents being more concentrated around specific topics, as each document's topic mixture has higher probabilities for fewer topics rather than being spread across many. A more concentrated topic-word distribution, driven by a large $\mathbf{\beta}$, means topics are dominated by fewer words; i.e., higher probabilities for specific words within each topic.
 
-Geometrically, the interpretation is similar to the mixture of unigrams. The difference is that, rather than a single point within the triangle defining a singular topic chosen, there are degrees to which the topics of the documents represent each document.
+Geometrically, the interpretation is similar to the mixture of unigrams. The difference is that, rather than a point within the triangle defining a singular topic chosen, there are degrees to which each of the topics represent each document.
 
 
 <details markdown="1">
@@ -660,11 +658,11 @@ plt.show()
 <img src="https://raw.githubusercontent.com/pw398/pw398.github.io/main/_posts/images/subplot_with_topic_dists.png" style="height: 500px; width:auto;">
 
 
-We see that the unigram model, because it is only able to infer a distribution over the entire corpus, must select the same topic across documents. The mixture of unigrams, as promised, is able to assign different topics to different documents. The LDA distribution of topics over documents is more granular, providing a distribution of topics over each document. 
+We see that the unigram model, because it is only able to infer a distribution over the entire corpus, must select the same topic across documents. The mixture of unigrams, as promised, is able to assign different topics to different documents. But the LDA distribution of topics over documents is more granular, providing a distribution of topics over each document. 
 
-In Scikit-Learn's <code>LatentDirichletAllocation</code> class, $\mathbf{\phi}_k$ corresponds to <code>lda.probs_list</code>, accessible thorugh <code>lda.components_</code>, and visualized in the top-row simplex topic-word distributions. $\mathbf{\theta}_d$ corresponds to <code>doc_topic_dists</code>, produced by the transformation <code>lda.transform(X)</code>. These are visualized by the bottom-row chart, showing the topic proportions per document.
+In Scikit-Learn's <code>LatentDirichletAllocation</code> class, $\mathbf{\phi}_k$ corresponds to <code>lda.probs_list</code>, accessible thorugh <code>lda.components_</code>, and visualized in the top-row simplexes' topic-word distributions. $\mathbf{\theta}_d$ corresponds to <code>doc_topic_dists</code>, produced by the transformation <code>lda.transform(X)</code>. These are visualized by the bottom-row chart, showing the topic proportions per document.
 
-<p>The marginal likelihood $P(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$ is implicitly optimized during <code>lda.fit(X)</code> and <code>lda.score(X)</code> provides the log-likelihood **link**.</p>
+<p>The marginal likelihood $P(\mathbf{w}_d | \mathbf{\alpha}, \mathbf{\beta})$ is implicitly optimized during <code>lda.fit(X)</code> and <code>lda.score(X)</code> provides the <a href="https://en.wikipedia.org/wiki/Likelihood_function">log-likelihood</a>.</p>
 
 
 
@@ -804,15 +802,15 @@ A notebook providing all the code used above is available <a href="https://githu
 
 # Solving LDA
 
-We haven't discussed the specifics of the algorithms used to solve LDA, and there are several, such as Gibbs sampling, variational inference, and expectation-maximization (EM). The Scikit-Learn model utilizes variational inference. Each of these could warrant an article to themselves, and for the sake of brevity, I will avoid going down those rabbit holes in this article. 
+We haven't discussed the specifics of the algorithms used to solve LDA, and there are several, such as Gibbs sampling, variational inference, and expectation-maximization (EM). The Scikit-Learn model utilizes variational inference. Each of these could warrant an article to themselves, and for the sake of brevity, I will avoid going down the rabbit holes in this article.
 
-There are also many variants of LDA, such as Correlated Topic Models (CTM), Hierarchical Dirichlet Process (HDP), and Dynamic Topic Models (DTM). And, we are not limited to only the bag-of-words method of vectorization; we could alternatively rely on methods like TF-IDF and continuous word embeddings.
+There are also many variants of LDA, such as Correlated Topic Models (CTM), Hierarchical Dirichlet Process (HDP), and Dynamic Topic Models (DTM). We are also not limited to the bag-of-words method of vectorization, and could use something like TF-IDF of continuous word embeddings. Furthermore, we could take into account word-sequence information, using bi-grams or tri-grams, etc., or treating sentences as sub-documents.
 
 
 
 # What's Next?
 
-The next article will be about practical application. We will:
+The next article will focus on practical application. We will:
 
 - Link up to the Reddit API, because its free of cost and restrictions, and conducive to topic modeling. 
 - Use the visualization tool <code>pyLDAviz</code> to produce some cool and interactive visualizations.
@@ -823,11 +821,11 @@ The next article will be about practical application. We will:
 
 # References
 
-- Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. Journal of Machine Learning Research. [https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf]https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf
+- Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. Journal of Machine Learning Research. [https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf](https://www.jmlr.org/papers/volume3/blei03a/blei03a.pdf)
 
-- [LazyProgrammer]. Machine Learning: Natural Language Processing in Python (V2) [Video]. DeepLearningCourses.com. [https://deeplearningcourses.com/c/natural-language-processing-in-python]https://deeplearningcourses.com/c/natural-language-processing-in-python
+- [LazyProgrammer]. Machine Learning: Natural Language Processing in Python (V2) [Video]. DeepLearningCourses.com. [https://deeplearningcourses.com/c/natural-language-processing-in-python](https://deeplearningcourses.com/c/natural-language-processing-in-python)
 
-- Ruozzi, N. (n.d.). Latent Dirichlet Allocation. UT Dallas. [https://personal.utdallas.edu/~nrr150130/cs6375/2015fa/lects/Lecture_20_LDA.pdf]https://personal.utdallas.edu/~nrr150130/cs6375/2015fa/lects/Lecture_20_LDA.pdf
+- Ruozzi, N. (n.d.). Latent Dirichlet Allocation. UT Dallas. [https://personal.utdallas.edu/~nrr150130/cs6375/2015fa/lects/Lecture_20_LDA.pdf](https://personal.utdallas.edu/~nrr150130/cs6375/2015fa/lects/Lecture_20_LDA.pdf)
 
 - Grok
 
