@@ -46,6 +46,7 @@ As a soft-clustering method, LDA facilitates overlapping topic assignments. Rath
   <ul>
     <li>e.g., a document is 40% represented by fiction, 20% by science, and so on with regard to other topics.</li>
   </ul>
+  <p></p>
   <li>A probability distribution over words to each topic.</li>
   <ul>
     <li>e.g., a topic is represented 5% by "quantum", 2% by "teleport", and so on with regard to other words (perhaps thousands of them).</li>
